@@ -14,10 +14,10 @@ class Settings(BaseSettings):
     )
 
     # Database
-    database_url: str = "postgresql+asyncpg://pragyan:pragyan_dev_pw@localhost:5432/pragyan"
+    database_url: str = "postgresql+asyncpg://pragyan:pragyan_dev_pw@localhost:55432/pragyan"
 
     # Redis
-    redis_url: str = "redis://localhost:6380/0"
+    redis_url: str = "redis://localhost:6381/0"
 
     # Scanning
     scan_allowlist: str = "192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.0/8"
