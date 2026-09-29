@@ -11,9 +11,14 @@ from app.repositories import (
 )
 from app.schemas import ScanCreate, ScanOut
 from app.services.discovery.allowlist import TargetNotAllowed, validate_target
-from app.services.discovery.scanner import ScanError, run_scan
+from app.services.discovery.scanner import run_scan
 
 router = APIRouter(tags=["scans"])
+
+# Hold strong references to detached scan tasks so they are not garbage-collected.
+import asyncio
+
+_scan_tasks: set[asyncio.Task] = set()
 
 
 async def _run_scan_job(scan_id: int, target: str) -> None:
@@ -29,7 +34,7 @@ async def _run_scan_job(scan_id: int, target: str) -> None:
             await set_scan_status(
                 db, scan_id, "completed", hosts_found=count, finished=True
             )
-        except (ScanError, Exception) as exc:  # noqa: BLE001 - record any failure
+        except Exception as exc:  # noqa: BLE001 - record any failure on the scan row
             await set_scan_status(
                 db, scan_id, "failed", error=str(exc), finished=True
             )
@@ -47,9 +52,9 @@ async def start_scan(
 
     scan = await create_scan(db, target)
     # Launch the scan as a detached task so the request returns immediately.
-    import asyncio
-
-    asyncio.create_task(_run_scan_job(scan.id, target))
+    task = asyncio.create_task(_run_scan_job(scan.id, target))
+    _scan_tasks.add(task)
+    task.add_done_callback(_scan_tasks.discard)
     return ScanOut.model_validate(scan)
 
 
