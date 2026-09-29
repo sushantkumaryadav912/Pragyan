@@ -1,0 +1,64 @@
+"""Pydantic v2 API schemas."""
+from __future__ import annotations
+
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+# --- Health ---
+class HealthResponse(BaseModel):
+    status: str
+    db: str
+    redis: str
+
+
+# --- Services ---
+class ServiceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    port: int
+    protocol: str
+    name: str | None = None
+    product: str | None = None
+    version: str | None = None
+    state: str
+
+
+# --- Devices ---
+class DeviceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    ip: str
+    mac: str | None = None
+    hostname: str | None = None
+    os: str | None = None
+    device_type: str | None = None
+    status: str
+    risk_score: int
+    is_new: bool
+    first_seen: datetime
+    last_seen: datetime
+
+
+class DeviceDetailOut(DeviceOut):
+    services: list[ServiceOut] = []
+
+
+# --- Scans ---
+class ScanCreate(BaseModel):
+    target_cidr: str = Field(..., examples=["192.168.1.0/24", "127.0.0.1/32"])
+
+
+class ScanOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    target_cidr: str
+    status: str
+    hosts_found: int
+    error: str | None = None
+    started_at: datetime
+    finished_at: datetime | None = None
