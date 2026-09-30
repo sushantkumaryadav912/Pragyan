@@ -63,6 +63,7 @@ export interface Scan {
   status: ScanStatus;
   hosts_found: number;
   error: string | null;
+  log_output?: string | null;
   started_at: string;
   finished_at: string | null;
   scanned_ports_count?: number;

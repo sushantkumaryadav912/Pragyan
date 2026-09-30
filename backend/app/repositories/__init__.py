@@ -117,6 +117,7 @@ async def set_scan_status(
     *,
     hosts_found: int | None = None,
     error: str | None = None,
+    log_output: str | None = None,
     finished: bool = False,
 ) -> None:
     scan = await db.get(Scan, scan_id)
@@ -127,6 +128,8 @@ async def set_scan_status(
         scan.hosts_found = hosts_found
     if error is not None:
         scan.error = error
+    if log_output is not None:
+        scan.log_output = log_output
     if finished:
         scan.finished_at = datetime.now(timezone.utc)
     await db.commit()

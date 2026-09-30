@@ -44,7 +44,6 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
 
-@lru_cache
 def get_settings() -> Settings:
     return Settings()
 

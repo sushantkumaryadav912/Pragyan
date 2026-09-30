@@ -99,6 +99,20 @@ export const api = {
     return await request<Scan>(`/scans/${id}`);
   },
 
+  cancelScan: async (id: number): Promise<Scan> => {
+    if (isDemoMode()) {
+      const found = DEMO_SCANS.find((s) => s.id === id);
+      if (found) {
+        found.status = "failed";
+        found.error = "Scan cancelled by user";
+        return found;
+      }
+    }
+    return await request<Scan>(`/scans/${id}/cancel`, {
+      method: "POST",
+    });
+  },
+
   startScan: async (target_cidr: string): Promise<Scan> => {
     if (isDemoMode()) {
       const newScan: Scan = {

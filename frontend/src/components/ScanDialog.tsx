@@ -22,7 +22,14 @@ export function ScanDialog() {
   const [logLines, setLogLines] = useState<string[]>([]);
   const qc = useQueryClient();
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
+    if (scanId !== null) {
+      try {
+        await api.cancelScan(scanId);
+      } catch {
+        /* ignore */
+      }
+    }
     setOpen(false);
     setScanId(null);
     setError(null);
@@ -158,7 +165,7 @@ export function ScanDialog() {
                 )}
 
                 {/* Console Execution Output */}
-                {logLines.length > 0 && (
+                {(logLines.length > 0 || !!scan.data?.log_output) && (
                   <div className="mt-3 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] text-slate-300">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2 text-slate-500">
                       <span className="flex items-center gap-1.5"><Terminal className="w-3.5 h-3.5" /> Scan Console</span>
@@ -166,8 +173,8 @@ export function ScanDialog() {
                       {done && scan.data?.status === "completed" && <Badge tone="normal">Completed</Badge>}
                       {done && scan.data?.status === "failed" && <Badge tone="critical">Failed</Badge>}
                     </div>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {logLines.map((line, idx) => (
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                      {(scan.data?.log_output ? scan.data.log_output.split("\n") : logLines).map((line, idx) => (
                         <div key={idx} className="text-cyan-400/90">{line}</div>
                       ))}
                     </div>

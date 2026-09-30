@@ -75,6 +75,7 @@ class ScanOut(BaseModel):
     status: str
     hosts_found: int
     error: str | None = None
+    log_output: str | None = None
     started_at: datetime
     finished_at: datetime | None = None
 
