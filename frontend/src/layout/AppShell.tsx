@@ -11,8 +11,10 @@ import {
   Wifi,
   Sparkles,
   ShieldAlert,
+  ShieldCheck,
   AlertOctagon,
   Lock,
+  LogOut,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -20,6 +22,7 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { ScanDialog } from "@/components/ScanDialog";
 import { isDemoMode, setDemoMode } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/context/AuthContext";
 
 const navGroups = [
   {
@@ -38,6 +41,7 @@ const navGroups = [
       { to: "/alerts", label: "Security Alerts", icon: ShieldAlert },
       { to: "/incidents", label: "Incident Triage", icon: AlertOctagon },
       { to: "/response", label: "Active Response", icon: Lock },
+      { to: "/audit", label: "Audit Logs", icon: ShieldCheck },
     ],
   },
 ];
@@ -45,12 +49,15 @@ const navGroups = [
 
 
 
+
 export function AppShell() {
+  const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [demoActive, setDemoActive] = useState(isDemoMode());
   const [clock, setClock] = useState(new Date().toLocaleTimeString());
   const location = useLocation();
+
 
   useEffect(() => {
     const timer = setInterval(() => setClock(new Date().toLocaleTimeString()), 1000);
@@ -195,9 +202,25 @@ export function AppShell() {
               <span>{clock}</span>
             </div>
 
+            {/* User Profile & Role */}
+            <div className="flex items-center space-x-2 text-xs font-mono bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
+              <span className="text-slate-300 font-semibold">{user?.username || "admin"}</span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                {user?.role || "ADMIN"}
+              </span>
+              <button
+                onClick={logout}
+                className="p-1 hover:text-red-400 text-slate-500 transition"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             {/* Launch Scan Action Button */}
             <ScanDialog />
           </div>
+
         </header>
 
         {/* Dynamic Route View */}

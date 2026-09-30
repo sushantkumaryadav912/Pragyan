@@ -1,5 +1,6 @@
-import type { Alert, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, Incident, ResponseAction, RiskScoreBreakdown, Scan, ThreatIntelIOC, TrafficSummary } from "./types";
+import type { Alert, AuditLog, AuthToken, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, Incident, ResponseAction, RiskScoreBreakdown, Scan, ThreatIntelIOC, TrafficSummary, User } from "./types";
 import { DEMO_ALERTS, DEMO_CHANGES, DEMO_CONNECTIONS, DEMO_DEVICES, DEMO_DNS_LOGS, DEMO_INCIDENTS, DEMO_RESPONSE_ACTIONS, DEMO_SCANS, DEMO_THREAT_INTEL, DEMO_TRAFFIC_SUMMARY } from "./demoData";
+
 
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000";
@@ -332,7 +333,51 @@ export const api = {
       body: JSON.stringify(ioc),
     });
   },
+
+  login: async (username: string, password: string): Promise<AuthToken> => {
+    return await request<AuthToken>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+  },
+
+  getMe: async (token: string): Promise<User> => {
+    return await request<User>("/auth/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  },
+
+  listAuditLogs: async (): Promise<AuditLog[]> => {
+    if (isDemoMode()) {
+      return [
+        {
+          id: 1,
+          username: "admin",
+          action: "ISOLATE_HOST",
+          target: "192.168.1.45",
+          details: "Host isolated via iptables drop rule on firewall interface eth0.",
+          status: "SUCCESS",
+          timestamp: new Date(Date.now() - 10 * 60000).toISOString()
+        },
+        {
+          id: 2,
+          username: "admin",
+          action: "BLOCK_IP",
+          target: "198.51.100.42",
+          details: "Subnet firewall blocked all outbound traffic to 198.51.100.42/32.",
+          status: "SUCCESS",
+          timestamp: new Date(Date.now() - 25 * 60000).toISOString()
+        }
+      ];
+    }
+    try {
+      return await request<AuditLog[]>("/audit/logs");
+    } catch {
+      return [];
+    }
+  },
 };
+
 
 
 

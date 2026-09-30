@@ -202,7 +202,10 @@ export interface ThreatIntelIOC {
   source: string;
   active: boolean;
   created_at: string;
+}
+
 export interface User {
+
   id: number;
   username: string;
   email: string;
