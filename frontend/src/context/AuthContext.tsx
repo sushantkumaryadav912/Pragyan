@@ -1,12 +1,15 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import type { User, AuthToken } from "../lib/types";
-import { api } from "../lib/api";
+import { signInWithEmailAndPassword, signOut as fbSignOut, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
+import { firebaseAuth } from "../lib/firebase";
+import type { User } from "../lib/types";
+
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  firebaseUser: FirebaseUser | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
 }
@@ -15,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const DEMO_USER: User = {
   id: 1,
-  username: "admin",
+  username: "admin@pragyan.internal",
   email: "admin@pragyan.internal",
   role: "ADMIN",
   is_active: true,
@@ -24,44 +27,74 @@ const DEMO_USER: User = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem("pragyan_jwt"));
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(DEMO_USER);
 
   useEffect(() => {
-    async function loadMe() {
-      if (token) {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
+      setFirebaseUser(fbUser);
+      if (fbUser) {
         try {
-          const fetched = await api.getMe(token);
-          setUser(fetched);
-        } catch {
-          // Fallback to demo admin user if server offline / demo mode
-          setUser(DEMO_USER);
-        }
-      } else {
-        setUser(DEMO_USER);
-      }
-    }
-    loadMe();
-  }, [token]);
+          const idToken = await fbUser.getIdToken();
+          localStorage.setItem("pragyan_jwt", idToken);
+          setToken(idToken);
 
-  const login = async (u: string, p: string) => {
+          setUser({
+            id: 101,
+            username: fbUser.email?.split("@")[0] || "analyst",
+            email: fbUser.email || "user@pragyan.internal",
+            role: fbUser.email?.includes("admin") ? "ADMIN" : "ANALYST",
+            is_active: true,
+            created_at: new Date().toISOString()
+          });
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const login = async (emailStr: string, passwordStr: string) => {
+    // If input is short username without @, append domain for Firebase Email Auth compatibility
+    const formattedEmail = emailStr.includes("@") ? emailStr : `${emailStr}@pragyan.internal`;
+    
     try {
-      const res: AuthToken = await api.login(u, p);
-      localStorage.setItem("pragyan_jwt", res.access_token);
-      setToken(res.access_token);
-      setUser(res.user);
-    } catch (err) {
-      // In demo mode allow instant demo login
-      if (u === "admin" && p === "admin123") {
+      const userCredential = await signInWithEmailAndPassword(firebaseAuth, formattedEmail, passwordStr);
+      const idToken = await userCredential.user.getIdToken();
+      localStorage.setItem("pragyan_jwt", idToken);
+      setToken(idToken);
+      setUser({
+        id: 101,
+        username: userCredential.user.email?.split("@")[0] || emailStr,
+        email: userCredential.user.email || formattedEmail,
+        role: emailStr.includes("admin") ? "ADMIN" : "ANALYST",
+        is_active: true,
+        created_at: new Date().toISOString()
+      });
+    } catch (err: any) {
+      // Fallback for demo lab environment (admin / admin123)
+      if ((emailStr === "admin" || emailStr === "admin@pragyan.internal") && passwordStr === "admin123") {
+        const mockToken = "mock_firebase_jwt_token_admin";
+        localStorage.setItem("pragyan_jwt", mockToken);
+        setToken(mockToken);
         setUser(DEMO_USER);
         return;
       }
-      throw err;
+      throw new Error(err.message || "Firebase Authentication failed");
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fbSignOut(firebaseAuth);
+    } catch {
+      /* ignore */
+    }
     localStorage.removeItem("pragyan_jwt");
     setToken(null);
+    setFirebaseUser(null);
     setUser(null);
   };
 
@@ -70,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         token,
+        firebaseUser,
         login,
         logout,
         isAuthenticated: !!user,

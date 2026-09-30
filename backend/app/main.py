@@ -18,6 +18,7 @@ from app.api.v1 import (
     response,
     risk,
     scans,
+    sensors,
     threat_intel,
     traffic,
     websocket,
@@ -46,6 +47,7 @@ API_PREFIX = "/api/v1"
 app.include_router(health.router, prefix=API_PREFIX)
 app.include_router(auth.router, prefix=API_PREFIX)
 app.include_router(audit.router, prefix=API_PREFIX)
+app.include_router(sensors.router, prefix=API_PREFIX)
 app.include_router(scans.router, prefix=API_PREFIX)
 app.include_router(devices.router, prefix=API_PREFIX)
 app.include_router(traffic.router, prefix=API_PREFIX)
@@ -57,6 +59,7 @@ app.include_router(response.router, prefix=API_PREFIX)
 app.include_router(threat_intel.router, prefix=API_PREFIX)
 app.include_router(reports.router, prefix=API_PREFIX)
 app.include_router(websocket.router, prefix=API_PREFIX)
+
 
 
 

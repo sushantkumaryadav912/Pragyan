@@ -23,7 +23,12 @@ class Settings(BaseSettings):
     scan_allowlist: str = "192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.0/8"
     nmap_flags: str = "-sV -T4"
 
+    # Sensors
+    zeek_log_dir: str = "/var/log/zeek/current"
+    suricata_eve_path: str = "/var/log/suricata/eve.json"
+
     # CORS
+
     cors_origins: str = "http://localhost:5173"
 
     @property

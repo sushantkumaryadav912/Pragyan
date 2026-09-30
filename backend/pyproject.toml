@@ -16,7 +16,9 @@ dependencies = [
     "numpy>=1.26",
     "pyjwt>=2.8",
     "bcrypt>=4.1",
+    "firebase-admin>=7.0",
 ]
+
 
 
 

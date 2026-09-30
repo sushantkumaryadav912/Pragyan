@@ -376,7 +376,27 @@ export const api = {
       return [];
     }
   },
+
+  getSensorsStatus: async () => {
+    if (isDemoMode()) {
+      return {
+        zeek: { name: "Zeek Telemetry", status: "ONLINE", log_dir: "/var/log/zeek/current", active_logs: ["conn.log", "dns.log", "http.log"] },
+        suricata: { name: "Suricata NIDS", status: "ONLINE", eve_path: "/var/log/suricata/eve.json", file_size_bytes: 4859000 },
+        overall_status: "HEALTHY"
+      };
+    }
+    try {
+      return await request<any>("/sensors/status");
+    } catch {
+      return {
+        zeek: { name: "Zeek Telemetry", status: "OFFLINE", log_dir: "/var/log/zeek/current", active_logs: [] },
+        suricata: { name: "Suricata NIDS", status: "OFFLINE", eve_path: "/var/log/suricata/eve.json", file_size_bytes: 0 },
+        overall_status: "OFFLINE"
+      };
+    }
+  },
 };
+
 
 
 
