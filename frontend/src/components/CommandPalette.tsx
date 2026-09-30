@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Search, HardDrive, X, ArrowRight } from "lucide-react";
 
@@ -41,9 +42,9 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     );
   });
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-xl rounded-xl border border-slate-700/80 bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-20 bg-slate-950/85 backdrop-blur-sm p-4">
+      <div className="w-full max-w-xl rounded-xl border border-slate-700/80 bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 z-[10000]">
         <div className="flex items-center px-4 border-b border-slate-800">
           <Search className="w-5 h-5 text-slate-400 mr-2" />
           <input
@@ -100,6 +101,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           <span><kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">&uarr; &darr;</kbd> navigate</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
+
