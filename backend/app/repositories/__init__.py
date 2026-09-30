@@ -6,8 +6,42 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Alert, Device, DeviceChange, Scan, Service
+from app.models import Alert, Device, DeviceChange, Incident, Scan, Service
 from app.services.discovery.parser import ParsedHost
+
+
+async def create_incident(db: AsyncSession, incident: Incident) -> Incident:
+    db.add(incident)
+    await db.commit()
+    await db.refresh(incident)
+    return incident
+
+
+async def get_incident(db: AsyncSession, incident_id: int) -> Incident | None:
+    return await db.get(Incident, incident_id)
+
+
+async def list_incidents(
+    db: AsyncSession, status: str | None = None, limit: int = 50
+) -> list[Incident]:
+    stmt = select(Incident).order_by(Incident.created_at.desc(), Incident.id.desc()).limit(limit)
+    if status:
+        stmt = stmt.where(Incident.status == status)
+    res = await db.execute(stmt)
+    return list(res.scalars().all())
+
+
+async def update_incident_status(
+    db: AsyncSession, incident_id: int, status: str
+) -> Incident | None:
+    incident = await db.get(Incident, incident_id)
+    if incident is None:
+        return None
+    incident.status = status
+    await db.commit()
+    await db.refresh(incident)
+    return incident
+
 
 
 async def create_alert(db: AsyncSession, alert: Alert) -> Alert:

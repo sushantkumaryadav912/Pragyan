@@ -157,7 +157,6 @@ export interface Alert {
 }
 
 export interface RiskScoreBreakdown {
-
   composite_risk_score: number;
   risk_tier: string;
   rule_score: number;
@@ -168,6 +167,44 @@ export interface RiskScoreBreakdown {
   active_alerts_count: number;
   total_alerts_count: number;
 }
+
+export interface Incident {
+  id: number;
+  incident_number: string;
+  title: string;
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  status: "OPEN" | "ACKNOWLEDGED" | "INVESTIGATING" | "CONTAINED" | "RESOLVED" | "CLOSED";
+  target_host: string;
+  risk_score: number;
+  summary: string;
+  device_id: number | null;
+  created_at: string;
+  updated_at: string;
+  alerts?: Alert[];
+}
+
+export interface ResponseAction {
+  id: number;
+  action_type: "ISOLATE_HOST" | "BLOCK_IP" | "TERMINATE_SESSION" | "TRIGGER_DEEP_SCAN";
+  target_ip: string;
+  reason: string;
+  status: "PENDING" | "EXECUTED" | "FAILED" | "ROLLED_BACK";
+  executed_at?: string;
+  details?: string;
+}
+
+export interface ThreatIntelIOC {
+  id: number;
+  ioc_type: "IP" | "DOMAIN" | "HASH";
+  value: string;
+  threat_category: string;
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  source: string;
+  active: boolean;
+  created_at: string;
+}
+
+
 
 
 

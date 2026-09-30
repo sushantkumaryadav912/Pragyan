@@ -1,5 +1,6 @@
-import type { Alert, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, RiskScoreBreakdown, Scan, TrafficSummary } from "./types";
-import { DEMO_ALERTS, DEMO_CHANGES, DEMO_CONNECTIONS, DEMO_DEVICES, DEMO_DNS_LOGS, DEMO_SCANS, DEMO_TRAFFIC_SUMMARY } from "./demoData";
+import type { Alert, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, Incident, ResponseAction, RiskScoreBreakdown, Scan, ThreatIntelIOC, TrafficSummary } from "./types";
+import { DEMO_ALERTS, DEMO_CHANGES, DEMO_CONNECTIONS, DEMO_DEVICES, DEMO_DNS_LOGS, DEMO_INCIDENTS, DEMO_RESPONSE_ACTIONS, DEMO_SCANS, DEMO_THREAT_INTEL, DEMO_TRAFFIC_SUMMARY } from "./demoData";
+
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000";
 const API = `${BASE}/api/v1`;
@@ -224,7 +225,115 @@ export const api = {
       };
     }
   },
+  listIncidents: async (status?: string, severity?: string): Promise<Incident[]> => {
+    if (isDemoMode()) {
+      let filtered = [...DEMO_INCIDENTS];
+      if (status) filtered = filtered.filter((i) => i.status === status);
+      if (severity) filtered = filtered.filter((i) => i.severity === severity);
+      return filtered as Incident[];
+    }
+    try {
+      const params = new URLSearchParams();
+      if (status) params.append("status", status);
+      if (severity) params.append("severity", severity);
+      const query = params.toString() ? `?${params.toString()}` : "";
+      return await request<Incident[]>(`/incidents${query}`);
+    } catch {
+      return DEMO_INCIDENTS as Incident[];
+    }
+  },
+
+  getIncident: async (id: number): Promise<Incident> => {
+    if (isDemoMode()) {
+      const found = DEMO_INCIDENTS.find((i) => i.id === id);
+      if (found) return found as Incident;
+    }
+    return await request<Incident>(`/incidents/${id}`);
+  },
+
+  updateIncidentStatus: async (id: number, status: string): Promise<Incident> => {
+    if (isDemoMode()) {
+      const found = DEMO_INCIDENTS.find((i) => i.id === id);
+      if (found) {
+        (found as any).status = status;
+        return found as Incident;
+      }
+    }
+    return await request<Incident>(`/incidents/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  },
+
+  triggerCorrelation: async (): Promise<{ created_count: number; incidents: Incident[] }> => {
+    if (isDemoMode()) {
+      return { created_count: 0, incidents: DEMO_INCIDENTS as Incident[] };
+    }
+    return await request<{ created_count: number; incidents: Incident[] }>("/incidents/correlate", {
+      method: "POST",
+    });
+  },
+
+  listResponseActions: async (): Promise<ResponseAction[]> => {
+    if (isDemoMode()) return DEMO_RESPONSE_ACTIONS as ResponseAction[];
+    try {
+      return await request<ResponseAction[]>("/response/actions");
+    } catch {
+      return DEMO_RESPONSE_ACTIONS as ResponseAction[];
+    }
+  },
+
+  executeResponseAction: async (action_type: string, target_ip: string, reason: string): Promise<ResponseAction> => {
+    if (isDemoMode()) {
+      const newAction: ResponseAction = {
+        id: Date.now(),
+        action_type: action_type as any,
+        target_ip,
+        reason,
+        status: "EXECUTED",
+        executed_at: new Date().toISOString(),
+        details: `Simulated action execution [${action_type}] on target ${target_ip}`,
+      };
+      DEMO_RESPONSE_ACTIONS.unshift(newAction as any);
+      return newAction;
+    }
+    return await request<ResponseAction>("/response/execute", {
+      method: "POST",
+      body: JSON.stringify({ action_type, target_ip, reason }),
+    });
+  },
+
+  listThreatIntel: async (): Promise<ThreatIntelIOC[]> => {
+    if (isDemoMode()) return DEMO_THREAT_INTEL as ThreatIntelIOC[];
+    try {
+      return await request<ThreatIntelIOC[]>("/threat-intel/iocs");
+    } catch {
+      return DEMO_THREAT_INTEL as ThreatIntelIOC[];
+    }
+  },
+
+  addThreatIntelIOC: async (ioc: { ioc_type: string; value: string; threat_category: string; severity: string; source?: string }): Promise<ThreatIntelIOC> => {
+    if (isDemoMode()) {
+      const newIoc: ThreatIntelIOC = {
+        id: Date.now(),
+        ioc_type: ioc.ioc_type as any,
+        value: ioc.value,
+        threat_category: ioc.threat_category,
+        severity: ioc.severity as any,
+        source: ioc.source || "Manual Admin Input",
+        active: true,
+        created_at: new Date().toISOString(),
+      };
+      DEMO_THREAT_INTEL.unshift(newIoc as any);
+      return newIoc;
+    }
+    return await request<ThreatIntelIOC>("/threat-intel/iocs", {
+      method: "POST",
+      body: JSON.stringify(ioc),
+    });
+  },
 };
+
 
 
 

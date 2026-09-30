@@ -452,5 +452,100 @@ export const DEMO_ALERTS = [
   },
 ];
 
+export const DEMO_INCIDENTS = [
+  {
+    id: 401,
+    incident_number: "INC-1042",
+    title: "Compromised Host & Active C2 Channel - app-prod-node01",
+    severity: "CRITICAL" as const,
+    status: "INVESTIGATING" as const,
+    target_host: "192.168.1.45",
+    risk_score: 94,
+    summary: "Correlated 3 security alerts (DNS Tunneling, Port Scanning, Rogue Device) on host 192.168.1.45 indicating command & control exfiltration activity.",
+    device_id: 103,
+    created_at: new Date(Date.now() - 30 * 60000).toISOString(),
+    updated_at: new Date().toISOString(),
+    alerts: DEMO_ALERTS.filter(a => a.device_id === 103 || a.source_ip === "192.168.1.45")
+  },
+  {
+    id: 402,
+    incident_number: "INC-1041",
+    title: "Internal Reconnaissance & Telnet Exploit Attempt - IoT Cam",
+    severity: "HIGH" as const,
+    status: "ACKNOWLEDGED" as const,
+    target_host: "192.168.1.88",
+    risk_score: 82,
+    summary: "Rogue IoT device 192.168.1.88 initiated multi-port sweeps against subnet gateway 192.168.1.1 followed by failed SSH brute force attempts.",
+    device_id: 104,
+    created_at: new Date(Date.now() - 120 * 60000).toISOString(),
+    updated_at: new Date(Date.now() - 45 * 60000).toISOString(),
+    alerts: DEMO_ALERTS.filter(a => a.device_id === 104 || a.source_ip === "192.168.1.88")
+  }
+];
+
+export const DEMO_RESPONSE_ACTIONS = [
+  {
+    id: 601,
+    action_type: "ISOLATE_HOST" as const,
+    target_ip: "192.168.1.45",
+    reason: "Correlated incident INC-1042: Active DNS C2 Tunneling detected.",
+    status: "EXECUTED" as const,
+    executed_at: new Date(Date.now() - 10 * 60000).toISOString(),
+    details: "Host isolated via iptables drop rule on firewall interface eth0."
+  },
+  {
+    id: 602,
+    action_type: "BLOCK_IP" as const,
+    target_ip: "198.51.100.42",
+    reason: "External IP flagged in Threat Intel feeds (Known Malicious C2).",
+    status: "EXECUTED" as const,
+    executed_at: new Date(Date.now() - 25 * 60000).toISOString(),
+    details: "Subnet firewall blocked all outbound traffic to 198.51.100.42/32."
+  },
+  {
+    id: 603,
+    action_type: "TRIGGER_DEEP_SCAN" as const,
+    target_ip: "192.168.1.88",
+    reason: "Port scan activity trigger from rogue camera device.",
+    status: "PENDING" as const,
+    executed_at: undefined,
+    details: "Scheduled full 65535-port Nmap probe with OS fingerprinting."
+  }
+];
+
+export const DEMO_THREAT_INTEL = [
+  {
+    id: 701,
+    ioc_type: "DOMAIN" as const,
+    value: "tunnel-c2.net",
+    threat_category: "Command & Control",
+    severity: "CRITICAL" as const,
+    source: "AlienVault OTX",
+    active: true,
+    created_at: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+  },
+  {
+    id: 702,
+    ioc_type: "IP" as const,
+    value: "198.51.100.42",
+    threat_category: "Botnet C2 Node",
+    severity: "HIGH" as const,
+    source: "AbuseIPDB",
+    active: true,
+    created_at: new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString()
+  },
+  {
+    id: 703,
+    ioc_type: "HASH" as const,
+    value: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    threat_category: "Ransomware Payload",
+    severity: "CRITICAL" as const,
+    source: "VirusTotal",
+    active: true,
+    created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString()
+  }
+];
+
+
 
 

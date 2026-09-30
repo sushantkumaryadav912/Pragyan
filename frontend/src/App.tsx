@@ -9,6 +9,9 @@ import { AlertsPage } from "@/pages/AlertsPage";
 import { ScansPage } from "@/pages/ScansPage";
 import { TrafficPage } from "@/pages/TrafficPage";
 
+import { IncidentsPage } from "@/pages/IncidentsPage";
+import { ResponsePage } from "@/pages/ResponsePage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -31,7 +34,9 @@ export default function App() {
             <Route path="/devices/:id" element={<DeviceDetail />} />
             <Route path="/traffic" element={<TrafficPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/incidents" element={<IncidentsPage />} />
             <Route path="/topology" element={<TopologyPage />} />
+            <Route path="/response" element={<ResponsePage />} />
             <Route path="/scans" element={<ScansPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
@@ -40,6 +45,7 @@ export default function App() {
     </QueryClientProvider>
   );
 }
+
 
 
 

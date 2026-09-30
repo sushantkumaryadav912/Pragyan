@@ -11,8 +11,9 @@ import {
   Wifi,
   Sparkles,
   ShieldAlert,
+  AlertOctagon,
+  Lock,
 } from "lucide-react";
-
 
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -35,9 +36,12 @@ const navGroups = [
     section: "Security & Detection",
     items: [
       { to: "/alerts", label: "Security Alerts", icon: ShieldAlert },
+      { to: "/incidents", label: "Incident Triage", icon: AlertOctagon },
+      { to: "/response", label: "Active Response", icon: Lock },
     ],
   },
 ];
+
 
 
 

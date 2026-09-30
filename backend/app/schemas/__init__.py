@@ -184,4 +184,77 @@ class RiskScoreBreakdownOut(BaseModel):
     total_alerts_count: int
 
 
+# --- Incidents ---
+class IncidentOut(BaseModel):
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    incident_number: str
+    title: str
+    severity: str
+    status: str
+    target_host: str
+    risk_score: int
+    summary: str
+    device_id: int | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class IncidentCreate(BaseModel):
+    title: str
+    severity: str = "HIGH"
+    target_host: str
+    risk_score: int = 75
+    summary: str
+
+
+class IncidentStatusUpdate(BaseModel):
+    status: str  # OPEN, ACKNOWLEDGED, INVESTIGATING, CONTAINED, RESOLVED, CLOSED
+
+
+# --- Response Actions ---
+class ResponseActionCreate(BaseModel):
+    action_type: str  # ISOLATE_HOST, BLOCK_IP, TERMINATE_SESSION, TRIGGER_DEEP_SCAN
+    target_ip: str
+    reason: str
+
+
+class ResponseActionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    action_type: str
+    target_ip: str
+    reason: str
+    status: str
+    executed_at: datetime | None = None
+    details: str | None = None
+
+
+# --- Threat Intel IOCs ---
+class ThreatIntelIOCCreate(BaseModel):
+    ioc_type: str  # IP, DOMAIN, HASH
+    value: str
+    threat_category: str
+    severity: str = "HIGH"
+    source: str = "Manual"
+
+
+class ThreatIntelIOCOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    ioc_type: str
+    value: str
+    threat_category: str
+    severity: str
+    source: str
+    active: bool
+    created_at: datetime
+
+
+
+
 
