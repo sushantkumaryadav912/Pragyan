@@ -59,6 +59,17 @@ async def patch_alert_status(
     updated = await update_alert_status(db, alert_id, body.status)
     if updated is None:
         raise HTTPException(status_code=404, detail="Alert not found")
+
+    from app.repositories.audit import log_audit_event
+    await log_audit_event(
+        db,
+        username="admin",
+        action="UPDATE_ALERT_STATUS",
+        target=f"Alert #{alert_id}",
+        details=f"Alert #{alert_id} status updated to {body.status}",
+        status="SUCCESS"
+    )
+
     out = AlertOut.model_validate(updated)
     await ws_manager.broadcast("ALERT_UPDATE", out.model_dump(mode="json"))
     return out

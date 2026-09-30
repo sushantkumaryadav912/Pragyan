@@ -35,6 +35,17 @@ class ThreatIntelMatcher:
             active=True
         )
         db.add(ioc)
+
+        from app.repositories.audit import log_audit_event
+        await log_audit_event(
+            db,
+            username="admin",
+            action="ADD_THREAT_IOC",
+            target=value,
+            details=f"Added {ioc_type} IOC indicator [{threat_category}] severity {severity}",
+            status="SUCCESS"
+        )
+
         await db.commit()
         await db.refresh(ioc)
         return ioc

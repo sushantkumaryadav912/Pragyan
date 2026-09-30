@@ -39,6 +39,18 @@ class ResponseActionExecutor:
             details=details
         )
         db.add(action_record)
+
+        # Log audit entry to database
+        from app.repositories.audit import log_audit_event
+        await log_audit_event(
+            db,
+            username="admin",
+            action=action_type,
+            target=target_ip,
+            details=details,
+            status="SUCCESS"
+        )
+
         await db.commit()
         await db.refresh(action_record)
         return action_record

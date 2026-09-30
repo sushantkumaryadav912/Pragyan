@@ -71,6 +71,16 @@ async def start_scan(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     scan = await create_scan(db, target)
+    from app.repositories.audit import log_audit_event
+    await log_audit_event(
+        db,
+        username="admin",
+        action="START_SCAN",
+        target=target,
+        details=f"Dispatched Nmap network discovery scan for CIDR {target}",
+        status="SUCCESS"
+    )
+
     # Launch the scan as a tracked detached task
     task = asyncio.create_task(_run_scan_job(scan.id, target))
     _scan_tasks[scan.id] = task
@@ -90,6 +100,17 @@ async def cancel_scan(
     scan = await get_scan(db, scan_id)
     if scan is None:
         raise HTTPException(status_code=404, detail="Scan not found")
+
+    from app.repositories.audit import log_audit_event
+    await log_audit_event(
+        db,
+        username="admin",
+        action="CANCEL_SCAN",
+        target=f"Scan #{scan_id}",
+        details=f"Network scan process #{scan_id} cancelled by user",
+        status="SUCCESS"
+    )
+
     return ScanOut.model_validate(scan)
 
 

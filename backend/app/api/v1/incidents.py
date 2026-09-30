@@ -71,6 +71,17 @@ async def patch_incident_status(
     updated = await update_incident_status(db, incident_id, body.status)
     if updated is None:
         raise HTTPException(status_code=404, detail="Incident not found")
+
+    from app.repositories.audit import log_audit_event
+    await log_audit_event(
+        db,
+        username="admin",
+        action="UPDATE_INCIDENT_STATUS",
+        target=f"Incident #{incident_id}",
+        details=f"Incident #{incident_id} status updated to {body.status}",
+        status="SUCCESS"
+    )
+
     out = IncidentOut.model_validate(updated)
     await ws_manager.broadcast("INCIDENT_UPDATE", out.model_dump(mode="json"))
     return out

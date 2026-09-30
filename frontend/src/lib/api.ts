@@ -29,9 +29,15 @@ export function isDemoMode(): boolean {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = typeof window !== "undefined" ? (localStorage.getItem("pragyan_jwt") || localStorage.getItem("firebase_token")) : null;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(init?.headers as Record<string, string> || {}),
+  };
   const res = await fetch(`${API}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...init,
+    headers,
   });
   if (!res.ok) {
     let detail = res.statusText;
@@ -125,9 +131,11 @@ export const api = {
         return found;
       }
     }
-    return await request<Scan>(`/scans/${id}/cancel`, {
+    const scan = await request<Scan>(`/scans/${id}/cancel`, {
       method: "POST",
     });
+    syncScanToFirestore(scan);
+    return scan;
   },
 
   startScan: async (target_cidr: string): Promise<Scan> => {
@@ -154,10 +162,12 @@ export const api = {
       return newScan;
     }
 
-    return await request<Scan>("/networks/scan", {
+    const scan = await request<Scan>("/networks/scan", {
       method: "POST",
       body: JSON.stringify({ target_cidr }),
     });
+    syncScanToFirestore(scan);
+    return scan;
   },
 
   getTrafficSummary: async (): Promise<TrafficSummary> => {
