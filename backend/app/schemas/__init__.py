@@ -77,3 +77,53 @@ class ScanOut(BaseModel):
     error: str | None = None
     started_at: datetime
     finished_at: datetime | None = None
+
+
+# --- Traffic ---
+class ConnectionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    src_ip: str
+    src_port: int
+    dst_ip: str
+    dst_port: int
+    protocol: str
+    service: str | None = None
+    bytes_orig: int
+    bytes_resp: int
+    duration: float
+    conn_state: str | None = None
+    timestamp: datetime
+
+
+class DNSOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    src_ip: str
+    dst_ip: str
+    query: str
+    qtype: str
+    rcode: str
+    answers: str | None = None
+    entropy: float
+    timestamp: datetime
+
+
+class TopTalkerOut(BaseModel):
+    ip: str
+    total_bytes: int
+    connection_count: int
+
+
+class TrafficSummaryOut(BaseModel):
+    throughput_mbps: float
+    total_bytes: int
+    bytes_orig: int
+    bytes_resp: int
+    active_connections: int
+    total_dns_queries: int
+    protocol_breakdown: dict[str, int]
+    top_talkers: list[TopTalkerOut]
+

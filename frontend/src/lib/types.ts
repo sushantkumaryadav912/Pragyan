@@ -89,13 +89,49 @@ export interface TopologyLink {
   protocol?: string;
 }
 
-export interface SecuritySummary {
-  total_devices: number;
-  online_devices: number;
-  new_devices: number;
-  high_risk_devices: number;
-  active_ports: number;
-  last_scan_time?: string;
-  threat_level: "Optimal" | "Elevated" | "High Risk" | "Critical";
+export interface ConnectionEvent {
+  id: number;
+  src_ip: string;
+  src_port: number;
+  dst_ip: string;
+  dst_port: number;
+  protocol: string;
+  service: string | null;
+  bytes_orig: number;
+  bytes_resp: number;
+  duration: number;
+  conn_state: string | null;
+  timestamp: string;
 }
+
+export interface DNSEvent {
+  id: number;
+  src_ip: string;
+  dst_ip: string;
+  query: string;
+  qtype: string;
+  rcode: string;
+  answers: string | null;
+  entropy: number;
+  timestamp: string;
+}
+
+export interface TopTalker {
+  ip: string;
+  total_bytes: number;
+  connection_count: number;
+}
+
+export interface TrafficSummary {
+  throughput_mbps: number;
+  total_bytes: number;
+  bytes_orig: number;
+  bytes_resp: number;
+  active_connections: number;
+  total_dns_queries: number;
+  protocol_breakdown: Record<string, number>;
+  top_talkers: TopTalker[];
+}
+
+
 
