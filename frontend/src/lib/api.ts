@@ -4,16 +4,17 @@ import { DEMO_DEVICES, DEMO_SCANS } from "./demoData";
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000";
 const API = `${BASE}/api/v1`;
 
-let useDemoMode = false;
-
 export function setDemoMode(enable: boolean) {
-  useDemoMode = enable;
   localStorage.setItem("pragyan_demo_mode", enable ? "true" : "false");
 }
 
 export function isDemoMode(): boolean {
   if (typeof window === "undefined") return false;
-  return localStorage.getItem("pragyan_demo_mode") === "true" || useDemoMode;
+  const stored = localStorage.getItem("pragyan_demo_mode");
+  if (stored !== null) {
+    return stored === "true";
+  }
+  return true; // Default to demo telemetry if first load, but toggleable
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -46,12 +47,10 @@ export const api = {
   listDevices: async (): Promise<Device[]> => {
     if (isDemoMode()) return DEMO_DEVICES;
     try {
-      const real = await request<Device[]>("/devices");
-      if (real && real.length > 0) return real;
-      return DEMO_DEVICES;
+      return await request<Device[]>("/devices");
     } catch (err) {
-      console.warn("Backend unavailable, falling back to demo devices.", err);
-      return DEMO_DEVICES;
+      console.warn("Backend unavailable while Demo Mode is OFF.", err);
+      return [];
     }
   },
 
@@ -60,23 +59,15 @@ export const api = {
       const found = DEMO_DEVICES.find((d) => d.id === id);
       if (found) return found;
     }
-    try {
-      return await request<DeviceDetail>(`/devices/${id}`);
-    } catch (err) {
-      const found = DEMO_DEVICES.find((d) => d.id === id);
-      if (found) return found;
-      throw err;
-    }
+    return await request<DeviceDetail>(`/devices/${id}`);
   },
 
   listScans: async (): Promise<Scan[]> => {
     if (isDemoMode()) return DEMO_SCANS;
     try {
-      const real = await request<Scan[]>("/scans");
-      if (real && real.length > 0) return real;
-      return DEMO_SCANS;
+      return await request<Scan[]>("/scans");
     } catch {
-      return DEMO_SCANS;
+      return [];
     }
   },
 
@@ -85,13 +76,7 @@ export const api = {
       const found = DEMO_SCANS.find((s) => s.id === id);
       if (found) return found;
     }
-    try {
-      return await request<Scan>(`/scans/${id}`);
-    } catch {
-      const found = DEMO_SCANS.find((s) => s.id === id);
-      if (found) return found;
-      throw new Error(`Scan #${id} not found`);
-    }
+    return await request<Scan>(`/scans/${id}`);
   },
 
   startScan: async (target_cidr: string): Promise<Scan> => {
@@ -108,7 +93,6 @@ export const api = {
       };
       DEMO_SCANS.unshift(newScan);
       
-      // Simulate quick async scan completion in demo mode
       setTimeout(() => {
         newScan.status = "completed";
         newScan.hosts_found = Math.floor(Math.random() * 4) + 2;
@@ -119,32 +103,11 @@ export const api = {
       return newScan;
     }
 
-    try {
-      return await request<Scan>("/networks/scan", {
-        method: "POST",
-        body: JSON.stringify({ target_cidr }),
-      });
-    } catch (err) {
-      // If backend fails, return simulated scan response
-      console.warn("Backend error starting scan, falling back to simulated scan:", err);
-      const simulatedScan: Scan = {
-        id: Date.now(),
-        target_cidr,
-        status: "running",
-        hosts_found: 0,
-        error: null,
-        started_at: new Date().toISOString(),
-        finished_at: null,
-        scan_type: "Fast API Fallback Scan",
-      };
-      DEMO_SCANS.unshift(simulatedScan);
-      setTimeout(() => {
-        simulatedScan.status = "completed";
-        simulatedScan.hosts_found = 3;
-        simulatedScan.finished_at = new Date().toISOString();
-      }, 3000);
-      return simulatedScan;
-    }
+    return await request<Scan>("/networks/scan", {
+      method: "POST",
+      body: JSON.stringify({ target_cidr }),
+    });
   },
 };
+
 

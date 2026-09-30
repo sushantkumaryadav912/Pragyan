@@ -1,27 +1,20 @@
 import { TopologyGraph } from "@/components/TopologyGraph";
 import { Network, ShieldCheck, Cpu } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScanDialog } from "@/components/ScanDialog";
-
 
 export function TopologyPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-800/80 pb-5">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-100 font-mono">
-            NETWORK TOPOLOGY ARCHITECTURE
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time interactive node visualization of discovered gateways, servers, workstations, and traffic links
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <ScanDialog />
-        </div>
+      <div className="border-b border-slate-800/80 pb-5">
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-100 font-mono">
+          NETWORK TOPOLOGY ARCHITECTURE
+        </h1>
+        <p className="text-xs text-slate-400 mt-1">
+          Real-time interactive node visualization of discovered gateways, servers, workstations, and traffic links
+        </p>
       </div>
+
 
       {/* Top Topology Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

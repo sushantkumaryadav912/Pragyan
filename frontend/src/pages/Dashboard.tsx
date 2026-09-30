@@ -27,8 +27,9 @@ import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RadarSweep } from "@/components/RadarSweep";
-import { ScanDialog } from "@/components/ScanDialog";
 import { formatTimeAgo, riskTone } from "@/lib/utils";
+
+
 
 
 const PROTOCOL_COLORS = ["#00f0ff", "#8b5cf6", "#f59e0b", "#ff0055", "#10b981", "#3b82f6"];
@@ -79,25 +80,20 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Top Banner Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-800/80 pb-5">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-100 font-mono">
-              SECURITY OPERATIONS CONSOLE
-            </h1>
-            <Badge tone={highRiskCount > 0 ? "critical" : "normal"} pulse>
-              {highRiskCount > 0 ? `${highRiskCount} High Risk Assets` : "Subnet Optimal"}
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time Nmap asset discovery, service inspection & threat exposure telemetry
-          </p>
-        </div>
-
+      <div className="border-b border-slate-800/80 pb-5">
         <div className="flex items-center gap-3">
-          <ScanDialog />
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-100 font-mono">
+            SECURITY OPERATIONS CONSOLE
+          </h1>
+          <Badge tone={highRiskCount > 0 ? "critical" : "normal"} pulse>
+            {highRiskCount > 0 ? `${highRiskCount} High Risk Assets` : "Subnet Optimal"}
+          </Badge>
         </div>
+        <p className="text-xs text-slate-400 mt-1">
+          Real-time Nmap asset discovery, service inspection & threat exposure telemetry
+        </p>
       </div>
+
 
       {/* 4 Stat Overview Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

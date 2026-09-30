@@ -64,27 +64,28 @@ export function AppShell() {
         {/* Brand Header */}
         <div className="flex h-16 items-center justify-between px-4 border-b border-slate-800/80">
           <NavLink to="/dashboard" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.25)]">
-              <Shield className="h-5 w-5" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+              <Shield className="h-5 w-5 fill-cyan-500/20 text-cyan-400" />
             </div>
             {!collapsed && (
               <div className="flex flex-col">
-                <span className="text-base font-bold tracking-wider text-slate-100 font-mono">
-                  PRAGYAN <span className="text-cyan-400 text-xs">NDR</span>
+                <span className="text-base font-extrabold tracking-wider text-white font-mono flex items-center gap-1.5">
+                  PRAGYAN <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">NDR</span>
                 </span>
-                <span className="text-[10px] text-slate-500 uppercase tracking-widest">Network Operations</span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Network Operations</span>
               </div>
             )}
           </NavLink>
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
+
 
         {/* Navigation Section */}
         <nav className="flex-1 space-y-6 px-3 py-4 overflow-y-auto">

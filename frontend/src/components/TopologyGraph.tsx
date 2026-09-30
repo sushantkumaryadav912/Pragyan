@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { DEMO_TOPOLOGY_NODES, DEMO_TOPOLOGY_LINKS } from "@/lib/demoData";
 import type { TopologyNode } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -21,20 +20,20 @@ export function TopologyGraph() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Canvas Node Graph Display */}
-      <div className="lg:col-span-2 relative min-h-[460px] rounded-xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-6 overflow-hidden flex flex-col justify-between shadow-xl">
+      <div className="lg:col-span-2 relative min-h-[500px] rounded-xl border border-slate-800 bg-slate-950/90 backdrop-blur-md p-6 overflow-hidden flex flex-col justify-between shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none" />
 
-        <div className="flex items-center justify-between z-10">
+        <div className="flex items-center justify-between z-10 border-b border-slate-800/80 pb-3 mb-2">
           <div>
-            <h3 className="text-sm font-semibold text-slate-200 uppercase tracking-wider">Interactive Network Map</h3>
+            <h3 className="text-sm font-semibold text-slate-200 uppercase tracking-wider font-mono">Interactive Network Map</h3>
             <p className="text-xs text-slate-400">Layer 3 topology visualization & traffic flows</p>
           </div>
           <Badge tone="purple" pulse>Live Topology</Badge>
         </div>
 
-        {/* SVG Connections & Nodes */}
-        <div className="relative w-full h-[360px] my-4">
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+        {/* SVG Connections & Nodes Box */}
+        <div className="relative w-full h-[380px] my-2">
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 420" preserveAspectRatio="none">
             {DEMO_TOPOLOGY_LINKS.map((link, idx) => {
               const src = DEMO_TOPOLOGY_NODES.find((n) => n.id === link.source);
               const tgt = DEMO_TOPOLOGY_NODES.find((n) => n.id === link.target);
@@ -46,45 +45,47 @@ export function TopologyGraph() {
                     y1={src.y}
                     x2={tgt.x}
                     y2={tgt.y}
-                    stroke="rgba(0, 240, 255, 0.25)"
+                    stroke="rgba(0, 240, 255, 0.3)"
                     strokeWidth="2"
-                    strokeDasharray={link.traffic === "high" ? "4 4" : "0"}
-                    className="animate-pulse"
+                    strokeDasharray={link.traffic === "high" ? "6 4" : "0"}
                   />
                 </g>
               );
             })}
           </svg>
 
-          {/* Render Nodes */}
+          {/* Render Nodes using Percentage Positioning */}
           {DEMO_TOPOLOGY_NODES.map((node) => {
             const Icon = iconMap[node.type] || HardDrive;
             const isSelected = selectedNode?.id === node.id;
             const tone = riskTone(node.risk_score);
+            const leftPerc = ((node.x ?? 500) / 1000) * 100;
+            const topPerc = ((node.y ?? 200) / 420) * 100;
+
 
             return (
               <button
                 key={node.id}
                 onClick={() => setSelectedNode(node)}
-                style={{ left: `${node.x}px`, top: `${node.y}px` }}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center p-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                style={{ left: `${leftPerc}%`, top: `${topPerc}%` }}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? "bg-slate-900 border-2 border-cyan-400 shadow-[0_0_20px_rgba(0,240,255,0.4)] scale-110 z-20"
-                    : "bg-slate-900/90 border border-slate-700/80 hover:border-cyan-500/50 hover:scale-105 z-10"
+                    ? "bg-slate-900 border-2 border-cyan-400 shadow-[0_0_25px_rgba(0,240,255,0.4)] scale-110 z-20"
+                    : "bg-slate-900/95 border border-slate-700/80 hover:border-cyan-500/60 hover:scale-105 z-10"
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <div className={`p-2 rounded-lg ${isSelected ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-300"}`}>
-                    <Icon className="w-5 h-5" />
+                  <div className={`p-1.5 rounded-lg ${isSelected ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-300"}`}>
+                    <Icon className="w-4 h-4" />
                   </div>
                   <div className="text-left">
-                    <div className="text-xs font-semibold text-slate-200">{node.label}</div>
+                    <div className="text-xs font-semibold text-slate-100 whitespace-nowrap">{node.label}</div>
                     <div className="text-[10px] font-mono text-slate-400">{node.ip}</div>
                   </div>
                 </div>
                 {node.risk_score > 50 && (
                   <div className="mt-1">
-                    <Badge tone={tone}>{node.risk_score} Risk</Badge>
+                    <Badge tone={tone} className="text-[10px] py-0 px-1.5">{node.risk_score} Risk</Badge>
                   </div>
                 )}
               </button>
@@ -92,14 +93,14 @@ export function TopologyGraph() {
           })}
         </div>
 
-        {/* Controls / Legend */}
-        <div className="flex items-center justify-between text-xs text-slate-400 z-10 border-t border-slate-800/80 pt-3">
+        {/* Legend Footer */}
+        <div className="flex items-center justify-between text-xs text-slate-400 z-10 border-t border-slate-800/80 pt-3 mt-2">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Low Risk</span>
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" /> Medium</span>
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> High Risk</span>
           </div>
-          <div>Click node to inspect properties</div>
+          <span className="text-[11px]">Click node to inspect properties</span>
         </div>
       </div>
 
@@ -153,3 +154,4 @@ export function TopologyGraph() {
     </div>
   );
 }
+

@@ -15,8 +15,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanDialog } from "@/components/ScanDialog";
 import { formatTimeAgo, riskTone, exportToCSV } from "@/lib/utils";
+
+
 
 
 export function Devices() {
@@ -78,9 +79,9 @@ export function Devices() {
           <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
             <Download className="w-3.5 h-3.5" /> Export CSV
           </Button>
-          <ScanDialog />
         </div>
       </div>
+
 
       {/* Filter & View Switcher Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-3 rounded-xl border border-slate-800">

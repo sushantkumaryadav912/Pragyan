@@ -4,8 +4,9 @@ import { Terminal } from "lucide-react";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScanDialog } from "@/components/ScanDialog";
 import { formatDate, formatTimeAgo } from "@/lib/utils";
+
+
 
 
 export function ScansPage() {
@@ -18,20 +19,15 @@ export function ScansPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-800/80 pb-5">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-100 font-mono">
-            DISCOVERY SCAN OPERATIONS
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Historical execution logs, Nmap CLI arguments, target CIDRs, and discovered host metrics
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <ScanDialog />
-        </div>
+      <div className="border-b border-slate-800/80 pb-5">
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-100 font-mono">
+          DISCOVERY SCAN OPERATIONS
+        </h1>
+        <p className="text-xs text-slate-400 mt-1">
+          Historical execution logs, Nmap CLI arguments, target CIDRs, and discovered host metrics
+        </p>
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Scan Execution History List */}

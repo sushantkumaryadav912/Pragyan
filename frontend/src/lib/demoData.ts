@@ -192,13 +192,14 @@ export const DEMO_SCANS: Scan[] = [
 ];
 
 export const DEMO_TOPOLOGY_NODES: TopologyNode[] = [
-  { id: "node-1", label: "pfSense Gateway", ip: "192.168.1.1", type: "gateway", risk_score: 12, status: "up", ports_count: 4, x: 400, y: 80 },
-  { id: "node-2", label: "Domain Controller", ip: "192.168.1.10", type: "server", risk_score: 84, status: "up", ports_count: 5, x: 200, y: 220 },
-  { id: "node-3", label: "App Server", ip: "192.168.1.45", type: "server", risk_score: 42, status: "up", ports_count: 3, x: 600, y: 220 },
-  { id: "node-4", label: "IoT Security Cam", ip: "192.168.1.88", type: "iot", risk_score: 68, status: "up", ports_count: 2, x: 150, y: 380 },
-  { id: "node-5", label: "SecOps Workstation", ip: "192.168.1.120", type: "workstation", risk_score: 18, status: "up", ports_count: 1, x: 400, y: 380 },
-  { id: "node-6", label: "SIEM Collector", ip: "192.168.1.200", type: "server", risk_score: 5, status: "up", ports_count: 3, x: 650, y: 380 },
+  { id: "node-1", label: "pfSense Gateway", ip: "192.168.1.1", type: "gateway", risk_score: 12, status: "up", ports_count: 4, x: 500, y: 70 },
+  { id: "node-2", label: "Domain Controller", ip: "192.168.1.10", type: "server", risk_score: 84, status: "up", ports_count: 5, x: 250, y: 210 },
+  { id: "node-3", label: "App Server", ip: "192.168.1.45", type: "server", risk_score: 42, status: "up", ports_count: 3, x: 750, y: 210 },
+  { id: "node-4", label: "IoT Security Cam", ip: "192.168.1.88", type: "iot", risk_score: 68, status: "up", ports_count: 2, x: 180, y: 350 },
+  { id: "node-5", label: "SecOps Workstation", ip: "192.168.1.120", type: "workstation", risk_score: 18, status: "up", ports_count: 1, x: 500, y: 350 },
+  { id: "node-6", label: "SIEM Collector", ip: "192.168.1.200", type: "server", risk_score: 5, status: "up", ports_count: 3, x: 820, y: 350 },
 ];
+
 
 export const DEMO_TOPOLOGY_LINKS: TopologyLink[] = [
   { source: "node-1", target: "node-2", traffic: "high", protocol: "Kerberos/LDAP" },
