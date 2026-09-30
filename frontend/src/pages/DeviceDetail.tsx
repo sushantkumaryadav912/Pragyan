@@ -6,6 +6,9 @@ import {
   Server,
   ShieldAlert,
   Search,
+  History,
+  Activity,
+  Radio,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,14 +20,20 @@ import { formatDate, formatTimeAgo, riskTone, riskLabel, getVendorFromMac } from
 export function DeviceDetail() {
   const { id } = useParams();
   const [serviceSearch, setServiceSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<"services" | "history">("services");
 
-  const { data, isLoading, error } = useQuery({
+  const { data: device, isLoading, error } = useQuery({
     queryKey: ["device", id],
     queryFn: () => api.getDevice(Number(id)),
     enabled: !!id,
   });
 
-  const device = data;
+  const { data: changes = [] } = useQuery({
+    queryKey: ["device-changes", id],
+    queryFn: () => api.getDeviceChanges(Number(id)),
+    enabled: !!id,
+  });
+
 
   const filteredServices = (device?.services ?? []).filter((s) => {
     const q = serviceSearch.toLowerCase();
@@ -153,69 +162,162 @@ export function DeviceDetail() {
             </Card>
           )}
 
+          {/* Tab Navigation Controls */}
+          <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+            <button
+              onClick={() => setActiveTab("services")}
+              className={`flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg transition-all ${
+                activeTab === "services"
+                  ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+              }`}
+            >
+              <Activity className="w-4 h-4" /> Open Ports & Services ({device.services.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("history")}
+              className={`flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg transition-all ${
+                activeTab === "history"
+                  ? "bg-purple-500/15 text-purple-400 border border-purple-500/30"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+              }`}
+            >
+              <History className="w-4 h-4" /> Change History & Audit Timeline ({changes.length})
+            </button>
+          </div>
+
           {/* Open Ports & Services Inspector */}
-          <Card glow>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <CardTitle>
-                Open Listening Ports & Services ({device.services.length})
-              </CardTitle>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                <Input
-                  value={serviceSearch}
-                  onChange={(e) => setServiceSearch(e.target.value)}
-                  placeholder="Filter ports, protocols..."
-                  className="pl-9 h-8 text-xs bg-slate-950/80 border-slate-800"
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {filteredServices.length === 0 ? (
-                <div className="py-8 text-center text-slate-500 text-xs">No matching open ports found.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="border-b border-slate-800 bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-400 font-mono">
-                      <tr>
-                        <th className="py-3 px-3">Port</th>
-                        <th className="py-3 px-3">Protocol</th>
-                        <th className="py-3 px-3">Service</th>
-                        <th className="py-3 px-3">Product / Banner</th>
-                        <th className="py-3 px-3">State</th>
-                        <th className="py-3 px-3 text-right">Risk Tag</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/60 font-sans">
-                      {filteredServices
-                        .sort((a, b) => a.port - b.port)
-                        .map((s) => (
-                          <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
-                            <td className="py-3 px-3 font-mono font-bold text-cyan-400">{s.port}</td>
-                            <td className="py-3 px-3 font-mono text-slate-400 uppercase">{s.protocol}</td>
-                            <td className="py-3 px-3 font-semibold text-slate-200">{s.name || "—"}</td>
-                            <td className="py-3 px-3 text-slate-300 font-mono text-[11px]">
-                              <div>{s.product ? `${s.product} ${s.version || ""}` : "—"}</div>
-                              {s.banner && <div className="text-[10px] text-slate-500 truncate max-w-xs">{s.banner}</div>}
-                            </td>
-                            <td className="py-3 px-3">
-                              <span className="inline-flex items-center gap-1 text-emerald-400 font-mono">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                {s.state}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-right">
-                              <Badge tone={s.risk_level === "critical" ? "critical" : s.risk_level === "high" ? "high" : "normal"}>
-                                {s.risk_level || "low"}
-                              </Badge>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+          {activeTab === "services" && (
+            <Card glow>
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <CardTitle>
+                  Open Listening Ports & Services ({device.services.length})
+                </CardTitle>
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                  <Input
+                    value={serviceSearch}
+                    onChange={(e) => setServiceSearch(e.target.value)}
+                    placeholder="Filter ports, protocols..."
+                    className="pl-9 h-8 text-xs bg-slate-950/80 border-slate-800"
+                  />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                {filteredServices.length === 0 ? (
+                  <div className="py-8 text-center text-slate-500 text-xs">No matching open ports found.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="border-b border-slate-800 bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-400 font-mono">
+                        <tr>
+                          <th className="py-3 px-3">Port</th>
+                          <th className="py-3 px-3">Protocol</th>
+                          <th className="py-3 px-3">Service</th>
+                          <th className="py-3 px-3">Product / Banner</th>
+                          <th className="py-3 px-3">State</th>
+                          <th className="py-3 px-3 text-right">Risk Tag</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60 font-sans">
+                        {filteredServices
+                          .sort((a, b) => a.port - b.port)
+                          .map((s) => (
+                            <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
+                              <td className="py-3 px-3 font-mono font-bold text-cyan-400">{s.port}</td>
+                              <td className="py-3 px-3 font-mono text-slate-400 uppercase">{s.protocol}</td>
+                              <td className="py-3 px-3 font-semibold text-slate-200">{s.name || "—"}</td>
+                              <td className="py-3 px-3 text-slate-300 font-mono text-[11px]">
+                                <div>{s.product ? `${s.product} ${s.version || ""}` : "—"}</div>
+                                {s.banner && <div className="text-[10px] text-slate-500 truncate max-w-xs">{s.banner}</div>}
+                              </td>
+                              <td className="py-3 px-3">
+                                <span className="inline-flex items-center gap-1 text-emerald-400 font-mono">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  {s.state}
+                                </span>
+                              </td>
+                              <td className="py-3 px-3 text-right">
+                                <Badge tone={s.risk_level === "critical" ? "critical" : s.risk_level === "high" ? "high" : "normal"}>
+                                  {s.risk_level || "low"}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Asset Change History Timeline */}
+          {activeTab === "history" && (
+            <Card glow>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="w-4 h-4 text-purple-400" /> Host Modifications & State History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {changes.length === 0 ? (
+                  <div className="py-10 text-center text-slate-500 text-xs">
+                    No state changes recorded for this asset yet.
+                  </div>
+                ) : (
+                  <div className="relative border-l border-slate-800 ml-4 space-y-6 py-2">
+                    {changes.map((change) => (
+                      <div key={change.id} className="relative pl-6">
+                        {/* Timeline Node Icon */}
+                        <div className="absolute -left-2.5 top-0.5 w-5 h-5 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center">
+                          <Radio className="w-3 h-3 text-purple-400" />
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-xs text-slate-200">{change.title}</span>
+                            <Badge
+                              tone={
+                                change.change_type === "NEW_DEVICE"
+                                  ? "purple"
+                                  : change.change_type === "NEW_PORT"
+                                  ? "high"
+                                  : change.change_type === "CLOSED_PORT"
+                                  ? "normal"
+                                  : "muted"
+                              }
+                              className="text-[10px]"
+                            >
+                              {change.change_type}
+                            </Badge>
+                          </div>
+                          <span className="font-mono text-[11px] text-slate-400">
+                            {formatTimeAgo(change.timestamp)} ({formatDate(change.timestamp)})
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1">{change.description}</p>
+                        {(change.old_value || change.new_value) && (
+                          <div className="mt-2 text-[11px] font-mono bg-slate-950/80 p-2 rounded border border-slate-800/80 flex flex-wrap gap-4">
+                            {change.old_value && (
+                              <span className="text-rose-400">
+                                <strong>Previous:</strong> {change.old_value}
+                              </span>
+                            )}
+                            {change.new_value && (
+                              <span className="text-emerald-400">
+                                <strong>Updated:</strong> {change.new_value}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
         </>
       )}
     </div>

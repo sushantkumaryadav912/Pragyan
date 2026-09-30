@@ -1,5 +1,5 @@
-import type { Device, DeviceDetail, Scan } from "./types";
-import { DEMO_DEVICES, DEMO_SCANS } from "./demoData";
+import type { Device, DeviceChange, DeviceDetail, Scan } from "./types";
+import { DEMO_CHANGES, DEMO_DEVICES, DEMO_SCANS } from "./demoData";
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000";
 const API = `${BASE}/api/v1`;
@@ -61,6 +61,25 @@ export const api = {
     }
     return await request<DeviceDetail>(`/devices/${id}`);
   },
+
+  listDeviceChanges: async (): Promise<DeviceChange[]> => {
+    if (isDemoMode()) return DEMO_CHANGES;
+    try {
+      return await request<DeviceChange[]>("/devices/changes");
+    } catch {
+      return [];
+    }
+  },
+
+  getDeviceChanges: async (deviceId: number): Promise<DeviceChange[]> => {
+    if (isDemoMode()) return DEMO_CHANGES.filter((c) => c.device_id === deviceId);
+    try {
+      return await request<DeviceChange[]>(`/devices/${deviceId}/changes`);
+    } catch {
+      return [];
+    }
+  },
+
 
   listScans: async (): Promise<Scan[]> => {
     if (isDemoMode()) return DEMO_SCANS;

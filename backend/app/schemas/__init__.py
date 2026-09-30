@@ -43,8 +43,23 @@ class DeviceOut(BaseModel):
     last_seen: datetime
 
 
+class DeviceChangeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    device_id: int
+    change_type: str
+    title: str
+    description: str | None = None
+    old_value: str | None = None
+    new_value: str | None = None
+    timestamp: datetime
+
+
 class DeviceDetailOut(DeviceOut):
     services: list[ServiceOut] = []
+    changes: list[DeviceChangeOut] = []
+
 
 
 # --- Scans ---

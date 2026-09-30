@@ -25,8 +25,20 @@ export interface Device {
   vendor?: string | null;
 }
 
+export interface DeviceChange {
+  id: number;
+  device_id: number;
+  change_type: "NEW_DEVICE" | "NEW_PORT" | "CLOSED_PORT" | "SERVICE_CHANGE" | "METADATA_CHANGE" | "STATUS_CHANGE" | string;
+  title: string;
+  description: string | null;
+  old_value: string | null;
+  new_value: string | null;
+  timestamp: string;
+}
+
 export interface DeviceDetail extends Device {
   services: Service[];
+  changes?: DeviceChange[];
   vulnerabilities?: Array<{
     id: string;
     cve?: string;
@@ -41,6 +53,7 @@ export interface DeviceDetail extends Device {
     details: string;
   }>;
 }
+
 
 export type ScanStatus = "pending" | "running" | "completed" | "failed";
 

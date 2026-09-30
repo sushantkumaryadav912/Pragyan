@@ -31,3 +31,7 @@ class Device(Base):
     services: Mapped[list["Service"]] = relationship(  # noqa: F821
         back_populates="device", cascade="all, delete-orphan", lazy="selectin"
     )
+    changes: Mapped[list["DeviceChange"]] = relationship(  # noqa: F821
+        back_populates="device", cascade="all, delete-orphan", lazy="selectin"
+    )
+

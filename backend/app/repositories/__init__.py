@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Device, Scan, Service
+from app.models import Device, DeviceChange, Scan, Service
 from app.services.discovery.parser import ParsedHost
 
 
@@ -49,11 +49,34 @@ async def set_scan_status(
     await db.commit()
 
 
+async def get_device_changes(
+    db: AsyncSession, device_id: int, limit: int = 50
+) -> list[DeviceChange]:
+    res = await db.execute(
+        select(DeviceChange)
+        .where(DeviceChange.device_id == device_id)
+        .order_by(DeviceChange.timestamp.desc(), DeviceChange.id.desc())
+        .limit(limit)
+    )
+    return list(res.scalars().all())
+
+
+async def list_recent_changes(
+    db: AsyncSession, limit: int = 50
+) -> list[DeviceChange]:
+    res = await db.execute(
+        select(DeviceChange)
+        .order_by(DeviceChange.timestamp.desc(), DeviceChange.id.desc())
+        .limit(limit)
+    )
+    return list(res.scalars().all())
+
+
 async def upsert_hosts(db: AsyncSession, hosts: list[ParsedHost]) -> int:
     """Insert/update devices and their services. Returns the count of hosts processed.
 
     Change detection: a device whose IP has never been seen is marked ``is_new``;
-    previously-seen devices are un-flagged and have their ``last_seen`` refreshed.
+    previously-seen devices are un-flagged, and state/port diffs are stored as ``DeviceChange``.
     """
     now = datetime.now(timezone.utc)
     processed = 0
@@ -80,19 +103,66 @@ async def upsert_hosts(db: AsyncSession, hosts: list[ParsedHost]) -> int:
             )
             db.add(device)
             await db.flush()  # assign device.id
+
+            db.add(
+                DeviceChange(
+                    device_id=device.id,
+                    change_type="NEW_DEVICE",
+                    title="New Device Discovered",
+                    description=f"Device {host.ip} first seen on network",
+                    new_value=host.ip,
+                    timestamp=now,
+                )
+            )
         else:
             device = existing
             device.is_new = False
             device.status = "up"
             device.last_seen = now
-            if host.mac:
+
+            if host.mac and device.mac != host.mac:
+                db.add(
+                    DeviceChange(
+                        device_id=device.id,
+                        change_type="METADATA_CHANGE",
+                        title="MAC Address Updated",
+                        description=f"MAC address changed to {host.mac}",
+                        old_value=device.mac,
+                        new_value=host.mac,
+                        timestamp=now,
+                    )
+                )
                 device.mac = host.mac
-            if host.hostname:
+
+            if host.hostname and device.hostname != host.hostname:
+                db.add(
+                    DeviceChange(
+                        device_id=device.id,
+                        change_type="METADATA_CHANGE",
+                        title="Hostname Changed",
+                        description=f"Hostname updated from '{device.hostname or ''}' to '{host.hostname}'",
+                        old_value=device.hostname,
+                        new_value=host.hostname,
+                        timestamp=now,
+                    )
+                )
                 device.hostname = host.hostname
-            if host.os:
+
+            if host.os and device.os != host.os:
+                db.add(
+                    DeviceChange(
+                        device_id=device.id,
+                        change_type="METADATA_CHANGE",
+                        title="OS Fingerprint Updated",
+                        description=f"Operating system detected as '{host.os}'",
+                        old_value=device.os,
+                        new_value=host.os,
+                        timestamp=now,
+                    )
+                )
                 device.os = host.os
 
-        # Replace the service set with the freshly observed open ports.
+        # Compare service set with freshly observed open ports.
         current = (
             await db.execute(select(Service).where(Service.device_id == device.id))
         ).scalars().all()
@@ -115,16 +185,51 @@ async def upsert_hosts(db: AsyncSession, hosts: list[ParsedHost]) -> int:
                         state=svc.state,
                     )
                 )
+                db.add(
+                    DeviceChange(
+                        device_id=device.id,
+                        change_type="NEW_PORT",
+                        title=f"Port {svc.port}/{svc.protocol} Opened",
+                        description=f"Service '{svc.name or 'unknown'}' detected on port {svc.port}/{svc.protocol}",
+                        new_value=f"{svc.port}/{svc.protocol} ({svc.name or 'unknown'})",
+                        timestamp=now,
+                    )
+                )
             else:
+                old_ver = f"{row.product or ''} {row.version or ''}".strip()
+                new_ver = f"{svc.product or ''} {svc.version or ''}".strip()
+                if old_ver != new_ver or row.name != svc.name:
+                    db.add(
+                        DeviceChange(
+                            device_id=device.id,
+                            change_type="SERVICE_CHANGE",
+                            title=f"Port {svc.port}/{svc.protocol} Service Updated",
+                            description=f"Service info updated on port {svc.port}/{svc.protocol}",
+                            old_value=f"{row.name or 'unknown'} ({old_ver})",
+                            new_value=f"{svc.name or 'unknown'} ({new_ver})",
+                            timestamp=now,
+                        )
+                    )
                 row.name = svc.name
                 row.product = svc.product
                 row.version = svc.version
                 row.state = svc.state
 
-        # Drop ports that are no longer open (closed-port change).
+        # Drop ports that are no longer open (CLOSED_PORT).
         for key, row in existing_keys.items():
             if key not in seen_keys:
+                db.add(
+                    DeviceChange(
+                        device_id=device.id,
+                        change_type="CLOSED_PORT",
+                        title=f"Port {row.port}/{row.protocol} Closed",
+                        description=f"Port {row.port}/{row.protocol} ({row.name or 'unknown'}) is no longer open",
+                        old_value=f"{row.port}/{row.protocol} ({row.name or 'unknown'})",
+                        timestamp=now,
+                    )
+                )
                 await db.delete(row)
 
     await db.commit()
     return processed
+

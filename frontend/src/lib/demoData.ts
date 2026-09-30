@@ -210,3 +210,47 @@ export const DEMO_TOPOLOGY_LINKS: TopologyLink[] = [
   { source: "node-3", target: "node-6", traffic: "high", protocol: "App Logs" },
   { source: "node-2", target: "node-6", traffic: "medium", protocol: "Audit Stream" },
 ];
+
+export const DEMO_CHANGES = [
+  {
+    id: 501,
+    device_id: 103,
+    change_type: "NEW_DEVICE",
+    title: "New Device Discovered",
+    description: "Device 192.168.1.45 first seen on network",
+    old_value: null,
+    new_value: "192.168.1.45",
+    timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 502,
+    device_id: 103,
+    change_type: "NEW_PORT",
+    title: "Port 5432/tcp Opened",
+    description: "Service 'postgresql' detected on port 5432/tcp",
+    old_value: null,
+    new_value: "5432/tcp (postgresql)",
+    timestamp: new Date(Date.now() - 90 * 60000).toISOString(),
+  },
+  {
+    id: 503,
+    device_id: 102,
+    change_type: "SERVICE_CHANGE",
+    title: "Port 3389/tcp Service Updated",
+    description: "Service banner updated on port 3389/tcp",
+    old_value: "ms-wbt-server (10.0)",
+    new_value: "Remote Desktop Services (RDP Active)",
+    timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 504,
+    device_id: 104,
+    change_type: "CLOSED_PORT",
+    title: "Port 80/tcp Closed",
+    description: "Port 80/tcp (http) is no longer open",
+    old_value: "80/tcp (http)",
+    new_value: null,
+    timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+  },
+];
+
