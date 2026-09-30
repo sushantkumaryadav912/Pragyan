@@ -5,13 +5,13 @@ import {
   HardDrive,
   Network,
   Activity,
-  Shield,
   Search,
   ChevronLeft,
   ChevronRight,
   Wifi,
   Sparkles,
 } from "lucide-react";
+
 
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -62,20 +62,25 @@ export function AppShell() {
         )}
       >
         {/* Brand Header */}
-        <div className="flex h-16 items-center justify-between px-4 border-b border-slate-800/80">
-          <NavLink to="/dashboard" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-              <Shield className="h-5 w-5 fill-cyan-500/20 text-cyan-400" />
-            </div>
+        <div className="flex h-16 items-center justify-between px-3.5 border-b border-slate-800/80">
+          <NavLink to="/dashboard" className="flex items-center gap-2 overflow-hidden">
+            <img
+              src="/Pragyan_Logo.png"
+              alt="Pragyan"
+              className={cn(
+                "object-contain drop-shadow-[0_0_14px_rgba(0,240,255,0.45)] transition-all duration-200",
+                collapsed ? "h-8 w-8" : "h-11 w-auto max-w-[175px]"
+              )}
+            />
             {!collapsed && (
-              <div className="flex flex-col">
-                <span className="text-base font-extrabold tracking-wider text-white font-mono flex items-center gap-1.5">
-                  PRAGYAN <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">NDR</span>
-                </span>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Network Operations</span>
-              </div>
+              <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shrink-0">
+                NDR
+              </span>
             )}
           </NavLink>
+
+
+
 
           <button
             onClick={() => setCollapsed(!collapsed)}
