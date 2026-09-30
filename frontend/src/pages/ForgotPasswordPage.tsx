@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
-import { Lock, User, AlertCircle, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Mail, AlertCircle, ArrowRight, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
-export function LoginPage() {
-  const { login, isAuthenticated } = useAuth();
+export function ForgotPasswordPage() {
+  const { resetPassword, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -21,12 +20,14 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     setLoading(true);
+
     try {
-      await login(email, password);
-      navigate("/dashboard");
+      await resetPassword(email);
+      setSuccess(`Password reset email successfully sent to ${email}. Please check your inbox.`);
     } catch (err: any) {
-      setError(err.message || "Firebase Authentication failed");
+      setError(err.message || "Failed to send password reset email.");
     } finally {
       setLoading(false);
     }
@@ -47,8 +48,8 @@ export function LoginPage() {
             />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-100 tracking-tight">Security Operations Console</h1>
-            <p className="text-xs text-slate-400">Intelligent Network Security Monitoring, Detection & Response</p>
+            <h1 className="text-xl font-bold text-slate-100 tracking-tight">Reset Account Password</h1>
+            <p className="text-xs text-slate-400">Enter your registered email to receive a password recovery link</p>
           </div>
         </div>
 
@@ -59,9 +60,16 @@ export function LoginPage() {
           </div>
         )}
 
+        {success && (
+          <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-400 flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{success}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs uppercase font-mono font-semibold text-slate-400 mb-1">Account Email</label>
+            <label className="block text-xs uppercase font-mono font-semibold text-slate-400 mb-1">Registered Email Address</label>
             <div className="relative">
               <input
                 type="text"
@@ -71,35 +79,7 @@ export function LoginPage() {
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-cyan-500 transition"
                 placeholder="analyst@pragyan.internal"
               />
-              <User className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs uppercase font-mono font-semibold text-slate-400 mb-1">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-9 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-cyan-500 transition"
-                placeholder="••••••••"
-              />
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 transition focus:outline-none cursor-pointer"
-                title={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            <div className="flex justify-end mt-1">
-              <Link to="/forgot-password" className="text-xs font-mono text-cyan-400 hover:text-cyan-300 hover:underline">
-                Forgot password?
-              </Link>
+              <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
             </div>
           </div>
 
@@ -108,18 +88,16 @@ export function LoginPage() {
             disabled={loading}
             className="w-full py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-sm rounded-lg shadow-lg shadow-cyan-500/20 transition flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
           >
-            <span>{loading ? "Verifying Credentials..." : "Sign In to SOC Console"}</span>
+            <span>{loading ? "Sending Recovery Email..." : "Send Password Reset Link"}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="border-t border-slate-800/80 pt-4 text-center">
-          <div className="text-xs font-mono text-slate-400">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2">
-              Create SOC Account
-            </Link>
-          </div>
+        <div className="text-center text-xs font-mono text-slate-400 border-t border-slate-800/80 pt-4">
+          <Link to="/login" className="inline-flex items-center space-x-1 text-cyan-400 hover:text-cyan-300 font-semibold">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Sign In</span>
+          </Link>
         </div>
       </div>
     </div>

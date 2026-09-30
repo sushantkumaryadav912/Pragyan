@@ -16,7 +16,7 @@ export function isDemoMode(): boolean {
   if (stored !== null) {
     return stored === "true";
   }
-  return true; // Default to demo telemetry if first load, but toggleable
+  return false; // Default to real-time live telemetry
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

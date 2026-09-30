@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 // Pragyan Live Firebase Config
 const firebaseConfig = {
@@ -14,3 +15,4 @@ const firebaseConfig = {
 
 export const firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const firebaseAuth = getAuth(firebaseApp);
+export const firestore = getFirestore(firebaseApp);

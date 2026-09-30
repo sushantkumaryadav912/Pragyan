@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Wifi,
-  Sparkles,
   ShieldAlert,
   ShieldCheck,
   AlertOctagon,
@@ -21,7 +20,6 @@ import {
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { ScanDialog } from "@/components/ScanDialog";
-import { isDemoMode, setDemoMode } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
 
@@ -62,22 +60,13 @@ export function AppShell() {
   const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [demoActive, setDemoActive] = useState(isDemoMode());
   const [clock, setClock] = useState(new Date().toLocaleTimeString());
   const location = useLocation();
-
 
   useEffect(() => {
     const timer = setInterval(() => setClock(new Date().toLocaleTimeString()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const handleToggleDemo = () => {
-    const next = !demoActive;
-    setDemoActive(next);
-    setDemoMode(next);
-    window.location.reload();
-  };
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100">
@@ -218,21 +207,6 @@ export function AppShell() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Demo Telemetry Toggle */}
-            <button
-              onClick={handleToggleDemo}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer",
-                demoActive
-                  ? "bg-purple-500/15 text-purple-300 border-purple-500/40"
-                  : "bg-slate-800/80 text-slate-400 border-slate-700 hover:text-slate-200",
-              )}
-              title="Toggle rich simulated telemetry"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-              <span>Demo Mode: {demoActive ? "ON" : "OFF"}</span>
-            </button>
-
             {/* Clock */}
             <div className="hidden lg:flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800">
               <span className="text-cyan-400">UTC</span>

@@ -205,8 +205,7 @@ export interface ThreatIntelIOC {
 }
 
 export interface User {
-
-  id: number;
+  id: number | string;
   username: string;
   email: string;
   role: "ADMIN" | "ANALYST" | "VIEWER";
