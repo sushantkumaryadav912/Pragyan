@@ -1,5 +1,14 @@
 import type { Alert, AuditLog, AuthToken, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, Incident, ResponseAction, RiskScoreBreakdown, Scan, ThreatIntelIOC, TrafficSummary, User } from "./types";
 import { DEMO_ALERTS, DEMO_CHANGES, DEMO_CONNECTIONS, DEMO_DEVICES, DEMO_DNS_LOGS, DEMO_INCIDENTS, DEMO_RESPONSE_ACTIONS, DEMO_SCANS, DEMO_THREAT_INTEL, DEMO_TRAFFIC_SUMMARY } from "./demoData";
+import { 
+  syncAlertToFirestore, 
+  syncAuditLogToFirestore, 
+  syncDeviceToFirestore, 
+  syncIncidentToFirestore, 
+  syncResponseActionToFirestore, 
+  syncScanToFirestore, 
+  syncThreatIntelToFirestore 
+} from "./firestoreSync";
 
 
 
@@ -49,7 +58,9 @@ export const api = {
   listDevices: async (): Promise<Device[]> => {
     if (isDemoMode()) return DEMO_DEVICES;
     try {
-      return await request<Device[]>("/devices");
+      const devices = await request<Device[]>("/devices");
+      devices.forEach(syncDeviceToFirestore);
+      return devices;
     } catch (err) {
       console.warn("Backend unavailable while Demo Mode is OFF.", err);
       return [];
@@ -61,7 +72,9 @@ export const api = {
       const found = DEMO_DEVICES.find((d) => d.id === id);
       if (found) return found;
     }
-    return await request<DeviceDetail>(`/devices/${id}`);
+    const dev = await request<DeviceDetail>(`/devices/${id}`);
+    syncDeviceToFirestore(dev);
+    return dev;
   },
 
   listDeviceChanges: async (): Promise<DeviceChange[]> => {
@@ -85,7 +98,9 @@ export const api = {
   listScans: async (): Promise<Scan[]> => {
     if (isDemoMode()) return DEMO_SCANS;
     try {
-      return await request<Scan[]>("/scans");
+      const scans = await request<Scan[]>("/scans");
+      scans.forEach(syncScanToFirestore);
+      return scans;
     } catch {
       return [];
     }
@@ -96,7 +111,9 @@ export const api = {
       const found = DEMO_SCANS.find((s) => s.id === id);
       if (found) return found;
     }
-    return await request<Scan>(`/scans/${id}`);
+    const scan = await request<Scan>(`/scans/${id}`);
+    syncScanToFirestore(scan);
+    return scan;
   },
 
   cancelScan: async (id: number): Promise<Scan> => {
@@ -182,7 +199,9 @@ export const api = {
       if (status) params.append("status", status);
       if (severity) params.append("severity", severity);
       const query = params.toString() ? `?${params.toString()}` : "";
-      return await request<Alert[]>(`/alerts${query}`);
+      const alerts = await request<Alert[]>(`/alerts${query}`);
+      alerts.forEach(syncAlertToFirestore);
+      return alerts;
     } catch {
       return DEMO_ALERTS as Alert[];
     }
@@ -193,7 +212,9 @@ export const api = {
       const found = DEMO_ALERTS.find((a) => a.id === id);
       if (found) return found as Alert;
     }
-    return await request<Alert>(`/alerts/${id}`);
+    const alert = await request<Alert>(`/alerts/${id}`);
+    syncAlertToFirestore(alert);
+    return alert;
   },
 
   updateAlertStatus: async (id: number, status: string): Promise<Alert> => {
@@ -204,10 +225,12 @@ export const api = {
         return found as Alert;
       }
     }
-    return await request<Alert>(`/alerts/${id}/status`, {
+    const alert = await request<Alert>(`/alerts/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
+    syncAlertToFirestore(alert);
+    return alert;
   },
 
   getDeviceRiskBreakdown: async (deviceId: number): Promise<RiskScoreBreakdown> => {
@@ -252,7 +275,9 @@ export const api = {
       if (status) params.append("status", status);
       if (severity) params.append("severity", severity);
       const query = params.toString() ? `?${params.toString()}` : "";
-      return await request<Incident[]>(`/incidents${query}`);
+      const incidents = await request<Incident[]>(`/incidents${query}`);
+      incidents.forEach(syncIncidentToFirestore);
+      return incidents;
     } catch {
       return DEMO_INCIDENTS as Incident[];
     }
@@ -263,7 +288,9 @@ export const api = {
       const found = DEMO_INCIDENTS.find((i) => i.id === id);
       if (found) return found as Incident;
     }
-    return await request<Incident>(`/incidents/${id}`);
+    const incident = await request<Incident>(`/incidents/${id}`);
+    syncIncidentToFirestore(incident);
+    return incident;
   },
 
   updateIncidentStatus: async (id: number, status: string): Promise<Incident> => {
@@ -274,25 +301,31 @@ export const api = {
         return found as Incident;
       }
     }
-    return await request<Incident>(`/incidents/${id}/status`, {
+    const incident = await request<Incident>(`/incidents/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
+    syncIncidentToFirestore(incident);
+    return incident;
   },
 
   triggerCorrelation: async (): Promise<{ created_count: number; incidents: Incident[] }> => {
     if (isDemoMode()) {
       return { created_count: 0, incidents: DEMO_INCIDENTS as Incident[] };
     }
-    return await request<{ created_count: number; incidents: Incident[] }>("/incidents/correlate", {
+    const res = await request<{ created_count: number; incidents: Incident[] }>("/incidents/correlate", {
       method: "POST",
     });
+    res.incidents.forEach(syncIncidentToFirestore);
+    return res;
   },
 
   listResponseActions: async (): Promise<ResponseAction[]> => {
     if (isDemoMode()) return DEMO_RESPONSE_ACTIONS as ResponseAction[];
     try {
-      return await request<ResponseAction[]>("/response/actions");
+      const actions = await request<ResponseAction[]>("/response/actions");
+      actions.forEach(syncResponseActionToFirestore);
+      return actions;
     } catch {
       return DEMO_RESPONSE_ACTIONS as ResponseAction[];
     }
@@ -312,16 +345,20 @@ export const api = {
       DEMO_RESPONSE_ACTIONS.unshift(newAction as any);
       return newAction;
     }
-    return await request<ResponseAction>("/response/execute", {
+    const action = await request<ResponseAction>("/response/execute", {
       method: "POST",
       body: JSON.stringify({ action_type, target_ip, reason }),
     });
+    syncResponseActionToFirestore(action);
+    return action;
   },
 
   listThreatIntel: async (): Promise<ThreatIntelIOC[]> => {
     if (isDemoMode()) return DEMO_THREAT_INTEL as ThreatIntelIOC[];
     try {
-      return await request<ThreatIntelIOC[]>("/threat-intel/iocs");
+      const iocs = await request<ThreatIntelIOC[]>("/threat-intel/iocs");
+      iocs.forEach(syncThreatIntelToFirestore);
+      return iocs;
     } catch {
       return DEMO_THREAT_INTEL as ThreatIntelIOC[];
     }
@@ -342,10 +379,12 @@ export const api = {
       DEMO_THREAT_INTEL.unshift(newIoc as any);
       return newIoc;
     }
-    return await request<ThreatIntelIOC>("/threat-intel/iocs", {
+    const newIoc = await request<ThreatIntelIOC>("/threat-intel/iocs", {
       method: "POST",
       body: JSON.stringify(ioc),
     });
+    syncThreatIntelToFirestore(newIoc);
+    return newIoc;
   },
 
   login: async (username: string, password: string): Promise<AuthToken> => {
@@ -385,7 +424,9 @@ export const api = {
       ];
     }
     try {
-      return await request<AuditLog[]>("/audit/logs");
+      const logs = await request<AuditLog[]>("/audit/logs");
+      logs.forEach(syncAuditLogToFirestore);
+      return logs;
     } catch {
       return [];
     }
