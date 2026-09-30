@@ -101,8 +101,28 @@ async def init_db() -> None:
         # Seed Incidents if empty
         incident_count = (await session.execute(select(func.count(Incident.id)))).scalar_one()
         if incident_count == 0:
-            inc1 = Incident(title="Potential Data Exfiltration & C2 Activity", description="Correlated multiple CRITICAL alerts involving host 10.24.81.200.", severity="CRITICAL", status="OPEN", alert_ids="[1, 2]", created_at=now, updated_at=now)
-            inc2 = Incident(title="Subnet Port Scan Activity", description="Sequential TCP probes across multiple internal targets", severity="HIGH", status="INVESTIGATING", alert_ids="[3]", created_at=now, updated_at=now)
+            inc1 = Incident(
+                incident_number="INC-2026-001",
+                title="Potential Data Exfiltration & C2 Activity",
+                summary="Correlated multiple CRITICAL alerts involving host 10.24.81.200.",
+                severity="CRITICAL",
+                status="OPEN",
+                target_host="10.24.81.200",
+                risk_score=90,
+                created_at=now,
+                updated_at=now
+            )
+            inc2 = Incident(
+                incident_number="INC-2026-002",
+                title="Subnet Port Scan Activity",
+                summary="Sequential TCP probes across multiple internal targets",
+                severity="HIGH",
+                status="INVESTIGATING",
+                target_host="10.24.81.106",
+                risk_score=75,
+                created_at=now,
+                updated_at=now
+            )
             session.add_all([inc1, inc2])
 
         # Seed Response Actions if empty
