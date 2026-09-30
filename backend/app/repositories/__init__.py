@@ -10,7 +10,17 @@ from app.models import Alert, Device, DeviceChange, Incident, Scan, Service
 from app.services.discovery.parser import ParsedHost
 
 
+async def get_devices(db: AsyncSession, limit: int = 100) -> list[Device]:
+    res = await db.execute(select(Device).order_by(Device.id.asc()).limit(limit))
+    return list(res.scalars().all())
+
+
+async def get_device(db: AsyncSession, device_id: int) -> Device | None:
+    return await db.get(Device, device_id)
+
+
 async def create_incident(db: AsyncSession, incident: Incident) -> Incident:
+
     db.add(incident)
     await db.commit()
     await db.refresh(incident)
