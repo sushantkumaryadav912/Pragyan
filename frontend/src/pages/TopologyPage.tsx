@@ -1,25 +1,58 @@
 import { useState, useEffect } from "react";
 import { Network, Server, Cpu, HardDrive, Radio } from "lucide-react";
-import { DEMO_TOPOLOGY_NODES, DEMO_TOPOLOGY_LINKS, DEMO_DEVICES } from "../lib/demoData";
+import { DEMO_TOPOLOGY_NODES, DEMO_TOPOLOGY_LINKS } from "../lib/demoData";
 import type { TopologyNode, TopologyLink, DeviceDetail } from "../lib/types";
 import { api } from "../lib/api";
 
 export function TopologyPage() {
-  const [nodes] = useState<TopologyNode[]>(DEMO_TOPOLOGY_NODES);
-
-  const [links] = useState<TopologyLink[]>(DEMO_TOPOLOGY_LINKS);
-  const [selectedNode, setSelectedNode] = useState<TopologyNode | null>(DEMO_TOPOLOGY_NODES[1]);
   const [devices, setDevices] = useState<DeviceDetail[]>([]);
+  const [nodes, setNodes] = useState<TopologyNode[]>(DEMO_TOPOLOGY_NODES);
+  const [links, setLinks] = useState<TopologyLink[]>(DEMO_TOPOLOGY_LINKS);
+  const [selectedNode, setSelectedNode] = useState<TopologyNode | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
         const fetched = await api.listDevices();
-        if (fetched.length > 0) {
+        if (fetched && fetched.length > 0) {
           setDevices(fetched as DeviceDetail[]);
+          
+          // Build topology graph dynamically from live devices
+          const generatedNodes: TopologyNode[] = fetched.map((dev, idx) => {
+            const isGateway = dev.ip.endsWith(".1") || idx === 0;
+            const type = isGateway ? "gateway" : dev.hostname?.toLowerCase().includes("server") || dev.hostname?.toLowerCase().includes("soc") ? "server" : "workstation";
+            const xPos = isGateway ? 500 : 150 + ((idx - 1) * 220) % 700;
+            const yPos = isGateway ? 90 : 270 + (idx % 2 === 0 ? 0 : 40);
+            return {
+              id: `node-${dev.id}`,
+              label: dev.hostname || dev.ip,
+              type: type as any,
+              ip: dev.ip,
+              riskScore: dev.risk_score || 0,
+              risk_score: dev.risk_score || 0,
+              ports_count: (dev as any).services?.length || 1,
+              status: dev.status === "up" ? "up" : "down",
+              x: xPos,
+              y: yPos
+            };
+          });
+
+          const gatewayNode = generatedNodes.find(n => n.type === "gateway") || generatedNodes[0];
+          const generatedLinks: TopologyLink[] = generatedNodes
+            .filter(n => n.id !== gatewayNode.id)
+            .map(n => ({
+              source: gatewayNode.id,
+              target: n.id,
+              protocol: "TCP/IP",
+              traffic: "low"
+            }));
+
+          setNodes(generatedNodes);
+          setLinks(generatedLinks);
+          setSelectedNode(gatewayNode);
         }
       } catch {
-        /* fallback to demo */
+        /* ignore */
       }
     }
     loadData();
@@ -46,7 +79,7 @@ export function TopologyPage() {
     return "border-emerald-500 bg-emerald-950/40 text-emerald-400 shadow-emerald-500/20";
   };
 
-  const selectedDevice = devices.find(d => d.ip === selectedNode?.ip) || DEMO_DEVICES.find(d => d.ip === selectedNode?.ip);
+  const selectedDevice = devices.find(d => d.ip === selectedNode?.ip);
 
   return (
     <div className="space-y-6">

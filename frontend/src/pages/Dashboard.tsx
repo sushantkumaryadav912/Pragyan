@@ -29,17 +29,16 @@ import { Badge } from "@/components/ui/badge";
 import { RadarSweep } from "@/components/RadarSweep";
 import { formatTimeAgo, riskTone } from "@/lib/utils";
 
-
-
-
 const PROTOCOL_COLORS = ["#00f0ff", "#8b5cf6", "#f59e0b", "#ff0055", "#10b981", "#3b82f6"];
 
 export function Dashboard() {
   const devicesQuery = useQuery({ queryKey: ["devices"], queryFn: api.listDevices });
   const scansQuery = useQuery({ queryKey: ["scans"], queryFn: api.listScans });
+  const alertsQuery = useQuery({ queryKey: ["alerts"], queryFn: () => api.listAlerts() });
 
   const devices = devicesQuery.data ?? [];
   const scans = scansQuery.data ?? [];
+  const liveAlerts = alertsQuery.data ?? [];
 
   const onlineCount = devices.filter((d) => d.status === "up").length;
   const newCount = devices.filter((d) => d.is_new).length;
@@ -61,20 +60,18 @@ export function Dashboard() {
   const protocolData = Object.keys(serviceCounts).length
     ? Object.entries(serviceCounts).map(([name, value]) => ({ name, value }))
     : [
-        { name: "HTTP/S", value: 6 },
-        { name: "SSH", value: 3 },
-        { name: "SMB/RDP", value: 4 },
-        { name: "KERBEROS", value: 2 },
-        { name: "OTHER", value: 5 },
+        { name: "HTTP/S", value: 1 },
+        { name: "SSH", value: 1 },
+        { name: "POSTGRESQL", value: 1 },
       ];
 
   // Risk Score Distribution
   const riskDistribution = [
-    { name: "Critical (80+)", count: devices.filter((d) => d.risk_score >= 80).length || 1, fill: "#ff0055" },
-    { name: "High (60-79)", count: devices.filter((d) => d.risk_score >= 60 && d.risk_score < 80).length || 1, fill: "#f59e0b" },
-    { name: "Medium (35-59)", count: devices.filter((d) => d.risk_score >= 35 && d.risk_score < 60).length || 2, fill: "#eab308" },
-    { name: "Low (1-34)", count: devices.filter((d) => d.risk_score > 0 && d.risk_score < 35).length || 2, fill: "#00f0ff" },
-    { name: "Secure (0)", count: devices.filter((d) => d.risk_score === 0).length || 0, fill: "#10b981" },
+    { name: "Critical (80+)", count: devices.filter((d) => d.risk_score >= 80).length, fill: "#ff0055" },
+    { name: "High (60-79)", count: devices.filter((d) => d.risk_score >= 60 && d.risk_score < 80).length, fill: "#f59e0b" },
+    { name: "Medium (35-59)", count: devices.filter((d) => d.risk_score >= 35 && d.risk_score < 60).length, fill: "#eab308" },
+    { name: "Low (1-34)", count: devices.filter((d) => d.risk_score > 0 && d.risk_score < 35).length, fill: "#00f0ff" },
+    { name: "Secure (0)", count: devices.filter((d) => d.risk_score === 0).length, fill: "#10b981" },
   ];
 
   return (
@@ -289,35 +286,34 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs">
-                  <div className="flex items-center justify-between font-semibold text-rose-300 mb-1">
-                    <span>Critical Telnet Port Exposed</span>
-                    <Badge tone="critical">CVE-2023</Badge>
+                {liveAlerts.length === 0 ? (
+                  <div className="p-4 text-center text-slate-500 text-xs">
+                    No active threat alerts detected.
                   </div>
-                  <p className="text-[11px] text-slate-400">
-                    Plaintext Telnet service detected on host 192.168.1.88 (IoT Camera).
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs">
-                  <div className="flex items-center justify-between font-semibold text-amber-300 mb-1">
-                    <span>Database Port Exposed</span>
-                    <Badge tone="high">High Exposure</Badge>
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    PostgreSQL listening on 0.0.0.0:5432 on 192.168.1.45.
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                  <div className="flex items-center justify-between font-semibold text-slate-200 mb-1">
-                    <span>Subnet Scan Finished</span>
-                    <Badge tone="normal">Completed</Badge>
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Nmap target 192.168.1.0/24 returned 6 active hosts.
-                  </p>
-                </div>
+                ) : (
+                  liveAlerts.slice(0, 3).map((alt) => (
+                    <div
+                      key={alt.id}
+                      className={`p-3 rounded-lg border text-xs ${
+                        alt.severity === "CRITICAL"
+                          ? "bg-rose-500/10 border-rose-500/20 text-rose-300"
+                          : alt.severity === "HIGH"
+                          ? "bg-amber-500/10 border-amber-500/20 text-amber-300"
+                          : "bg-slate-900 border-slate-800 text-slate-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-semibold mb-1">
+                        <span>{alt.title}</span>
+                        <Badge tone={alt.severity === "CRITICAL" ? "critical" : alt.severity === "HIGH" ? "high" : "normal"}>
+                          {alt.severity}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-slate-400">
+                        {alt.description}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

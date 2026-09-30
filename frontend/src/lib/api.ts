@@ -175,7 +175,16 @@ export const api = {
     try {
       return await request<TrafficSummary>("/traffic/summary");
     } catch {
-      return DEMO_TRAFFIC_SUMMARY;
+      return {
+        throughput_mbps: 0,
+        total_bytes: 0,
+        bytes_orig: 0,
+        bytes_resp: 0,
+        active_connections: 0,
+        total_dns_queries: 0,
+        protocol_breakdown: {},
+        top_talkers: []
+      };
     }
   },
 
@@ -184,7 +193,7 @@ export const api = {
     try {
       return await request<ConnectionEvent[]>("/traffic/connections");
     } catch {
-      return DEMO_CONNECTIONS;
+      return [];
     }
   },
 
@@ -193,7 +202,7 @@ export const api = {
     try {
       return await request<DNSEvent[]>("/traffic/dns");
     } catch {
-      return DEMO_DNS_LOGS;
+      return [];
     }
   },
 
@@ -213,7 +222,7 @@ export const api = {
       alerts.forEach(syncAlertToFirestore);
       return alerts;
     } catch {
-      return DEMO_ALERTS as Alert[];
+      return [];
     }
   },
 
@@ -289,7 +298,7 @@ export const api = {
       incidents.forEach(syncIncidentToFirestore);
       return incidents;
     } catch {
-      return DEMO_INCIDENTS as Incident[];
+      return [];
     }
   },
 
@@ -337,7 +346,7 @@ export const api = {
       actions.forEach(syncResponseActionToFirestore);
       return actions;
     } catch {
-      return DEMO_RESPONSE_ACTIONS as ResponseAction[];
+      return [];
     }
   },
 
@@ -370,7 +379,7 @@ export const api = {
       iocs.forEach(syncThreatIntelToFirestore);
       return iocs;
     } catch {
-      return DEMO_THREAT_INTEL as ThreatIntelIOC[];
+      return [];
     }
   },
 
