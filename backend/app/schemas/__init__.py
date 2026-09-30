@@ -255,6 +255,51 @@ class ThreatIntelIOCOut(BaseModel):
     created_at: datetime
 
 
+# --- Auth & Users ---
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    role: str = "ANALYST"  # ADMIN, ANALYST, VIEWER
+
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    email: str
+    role: str
+    is_active: bool
+    created_at: datetime
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
+
+
+# --- Audit Logs ---
+class AuditLogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int | None = None
+    username: str
+    action: str
+    target: str | None = None
+    details: str | None = None
+    status: str
+    timestamp: datetime
+
+
+
 
 
 

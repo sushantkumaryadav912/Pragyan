@@ -202,7 +202,32 @@ export interface ThreatIntelIOC {
   source: string;
   active: boolean;
   created_at: string;
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: "ADMIN" | "ANALYST" | "VIEWER";
+  is_active: boolean;
+  created_at: string;
 }
+
+export interface AuthToken {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface AuditLog {
+  id: number;
+  user_id?: number | null;
+  username: string;
+  action: string;
+  target?: string | null;
+  details?: string | null;
+  status: string;
+  timestamp: string;
+}
+
 
 
 

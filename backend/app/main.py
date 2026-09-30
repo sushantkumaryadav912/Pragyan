@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import (
     alerts,
+    audit,
+    auth,
     devices,
     health,
     ids,
@@ -42,6 +44,8 @@ app.add_middleware(
 
 API_PREFIX = "/api/v1"
 app.include_router(health.router, prefix=API_PREFIX)
+app.include_router(auth.router, prefix=API_PREFIX)
+app.include_router(audit.router, prefix=API_PREFIX)
 app.include_router(scans.router, prefix=API_PREFIX)
 app.include_router(devices.router, prefix=API_PREFIX)
 app.include_router(traffic.router, prefix=API_PREFIX)
@@ -53,6 +57,7 @@ app.include_router(response.router, prefix=API_PREFIX)
 app.include_router(threat_intel.router, prefix=API_PREFIX)
 app.include_router(reports.router, prefix=API_PREFIX)
 app.include_router(websocket.router, prefix=API_PREFIX)
+
 
 
 

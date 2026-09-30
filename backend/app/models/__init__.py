@@ -1,4 +1,5 @@
 from app.models.alert import Alert
+from app.models.audit_log import AuditLog
 from app.models.device import Device
 from app.models.device_change import DeviceChange
 from app.models.incident import Incident
@@ -7,9 +8,11 @@ from app.models.scan import Scan
 from app.models.service import Service
 from app.models.threat_intel import ThreatIntelIOC
 from app.models.traffic import ConnectionEvent, DNSEvent, HTTPEvent
+from app.models.user import User
 
 __all__ = [
     "Alert",
+    "AuditLog",
     "Device",
     "DeviceChange",
     "Incident",
@@ -17,10 +20,12 @@ __all__ = [
     "Scan",
     "Service",
     "ThreatIntelIOC",
+    "User",
     "ConnectionEvent",
     "DNSEvent",
     "HTTPEvent",
 ]
+
 
 
 

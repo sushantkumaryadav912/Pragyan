@@ -26,9 +26,22 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """Create tables for MVP. Replaced by Alembic migrations in a later phase."""
+    """Create tables and seed default admin account."""
     # Import models so they register on Base.metadata before create_all.
     from app import models  # noqa: F401
+    from app.repositories.users import get_user_by_username, create_user
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    async with SessionLocal() as session:
+        admin = await get_user_by_username(session, "admin")
+        if not admin:
+            await create_user(
+                session,
+                username="admin",
+                email="admin@pragyan.internal",
+                password="admin123",
+                role="ADMIN"
+            )
+
