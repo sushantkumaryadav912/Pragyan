@@ -11,10 +11,20 @@ import { TrafficPage } from "@/pages/TrafficPage";
 
 import { IncidentsPage } from "@/pages/IncidentsPage";
 import { ResponsePage } from "@/pages/ResponsePage";
-
-import { AuthProvider } from "@/context/AuthContext";
-import { LoginPage } from "@/pages/LoginPage";
 import { AuditPage } from "@/pages/AuditPage";
+import { SettingsPage } from "@/pages/SettingsPage";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { LoginPage } from "@/pages/LoginPage";
+
+
+
+function ProtectedAppShell() {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <AppShell />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,7 +43,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route element={<AppShell />}>
+            <Route element={<ProtectedAppShell />}>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/devices" element={<Devices />} />
@@ -44,6 +54,7 @@ export default function App() {
               <Route path="/topology" element={<TopologyPage />} />
               <Route path="/response" element={<ResponsePage />} />
               <Route path="/audit" element={<AuditPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/scans" element={<ScansPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
@@ -53,6 +64,7 @@ export default function App() {
     </QueryClientProvider>
   );
 }
+
 
 
 

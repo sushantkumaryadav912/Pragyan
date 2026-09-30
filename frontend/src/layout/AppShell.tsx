@@ -15,14 +15,15 @@ import {
   AlertOctagon,
   Lock,
   LogOut,
+  Settings,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { ScanDialog } from "@/components/ScanDialog";
 import { isDemoMode, setDemoMode } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
+
 
 const navGroups = [
   {
@@ -44,7 +45,14 @@ const navGroups = [
       { to: "/audit", label: "Audit Logs", icon: ShieldCheck },
     ],
   },
+  {
+    section: "Administration",
+    items: [
+      { to: "/settings", label: "User Settings", icon: Settings },
+    ],
+  },
 ];
+
 
 
 
@@ -143,18 +151,47 @@ export function AppShell() {
           ))}
         </nav>
 
-        {/* Sidebar Footer Info */}
-        {!collapsed && (
-          <div className="p-4 border-t border-slate-800/80 bg-slate-900/40">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
+        {/* Sidebar Footer User Info & Logout Button */}
+        <div className="p-3 border-t border-slate-800/80 bg-slate-900/60 space-y-2">
+          {!collapsed ? (
+            <div className="flex items-center justify-between">
+              <NavLink to="/settings" className="flex items-center space-x-2 overflow-hidden hover:opacity-80 transition">
+                <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs font-bold shrink-0">
+                  {user?.username?.[0]?.toUpperCase() || "A"}
+                </div>
+                <div className="truncate text-left">
+                  <div className="text-xs font-semibold text-slate-200 line-clamp-1">{user?.username || "admin"}</div>
+                  <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">{user?.role || "ADMIN"}</span>
+                </div>
+              </NavLink>
+
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition cursor-pointer"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={logout}
+              className="w-full flex justify-center p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
+
+          {!collapsed && (
+            <div className="flex items-center justify-between pt-1 border-t border-slate-800/60 text-[10px] text-slate-500">
+              <span className="flex items-center gap-1">
                 <Wifi className="w-3.5 h-3.5 text-emerald-400 animate-pulse" /> SOC Status
               </span>
-              <Badge tone="normal" pulse>Active</Badge>
+              <span className="text-emerald-400 font-semibold uppercase">Active</span>
             </div>
-            <p className="text-[11px] text-slate-500">Nmap Discovery Engine v1.4</p>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -202,28 +239,22 @@ export function AppShell() {
               <span>{clock}</span>
             </div>
 
-            {/* User Profile & Role */}
-            <div className="flex items-center space-x-2 text-xs font-mono bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
-              <span className="text-slate-300 font-semibold">{user?.username || "admin"}</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                {user?.role || "ADMIN"}
-              </span>
-              <button
-                onClick={logout}
-                className="p-1 hover:text-red-400 text-slate-500 transition"
-                title="Sign out"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            {/* Settings Quick Access Link */}
+            <NavLink
+              to="/settings"
+              className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-800 transition flex items-center space-x-1 text-xs font-mono"
+              title="User Account & SOC Settings"
+            >
+              <Settings className="w-4 h-4 text-cyan-400" />
+            </NavLink>
 
             {/* Launch Scan Action Button */}
             <ScanDialog />
           </div>
-
         </header>
 
         {/* Dynamic Route View */}
+
         <main className="flex-1 overflow-y-auto p-6 bg-slate-950/40 cyber-grid-bg">
           <Outlet />
         </main>
