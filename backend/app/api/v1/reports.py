@@ -2,9 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any
 from app.core.db import get_db
-from app.repositories import get_devices
-from app.services.incidents.correlator import AlertCorrelator
-
+from app.repositories import get_devices, list_incidents
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
@@ -14,7 +12,8 @@ async def get_security_report_summary(db: AsyncSession = Depends(get_db)) -> Dic
     Generates an executive NDR posture & security summary report.
     """
     devices = await get_devices(db)
-    incidents = await AlertCorrelator.list_incidents(db)
+    incidents = await list_incidents(db)
+
 
     high_risk_devices = [d for d in devices if d.risk_score >= 70]
     critical_incidents = [i for i in incidents if i.severity == "CRITICAL"]
