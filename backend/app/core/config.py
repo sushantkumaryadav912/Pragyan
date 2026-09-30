@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Scanning
     scan_allowlist: str = "192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.0/8"
-    nmap_flags: str = "-sV -T4"
+    nmap_flags: str = "-F -n --max-parallelism 100 --host-timeout 5s"
 
     # Sensors
     zeek_log_dir: str = "/var/log/zeek/current"

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 const CIDR_PRESETS = [
+  { label: "Active Subnet (10.24.81.0/24)", value: "10.24.81.0/24" },
   { label: "Local Subnet (192.168.1.0/24)", value: "192.168.1.0/24" },
   { label: "Corporate Range (10.0.0.0/24)", value: "10.0.0.0/24" },
   { label: "Loopback Host (127.0.0.1/32)", value: "127.0.0.1/32" },
@@ -15,11 +16,18 @@ const CIDR_PRESETS = [
 
 export function ScanDialog() {
   const [open, setOpen] = useState(false);
-  const [target, setTarget] = useState("192.168.1.0/24");
+  const [target, setTarget] = useState("10.24.81.0/24");
   const [scanId, setScanId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [logLines, setLogLines] = useState<string[]>([]);
   const qc = useQueryClient();
+
+  const handleCancel = () => {
+    setOpen(false);
+    setScanId(null);
+    setError(null);
+    setLogLines([]);
+  };
 
   const start = useMutation({
     mutationFn: () => api.startScan(target),
@@ -27,7 +35,7 @@ export function ScanDialog() {
       setLogLines([
         `[${new Date().toLocaleTimeString()}] Initializing Pragyan Nmap Discovery Agent...`,
         `[${new Date().toLocaleTimeString()}] Target CIDR validated: ${target}`,
-        `[${new Date().toLocaleTimeString()}] Executing TCP SYN / Connect scan (-sV -F)...`,
+        `[${new Date().toLocaleTimeString()}] Executing TCP SYN / Connect scan (-F -n)...`,
       ]);
     },
     onSuccess: (scan) => {
@@ -62,6 +70,11 @@ export function ScanDialog() {
           `[${new Date().toLocaleTimeString()}] Nmap engine finished scanning target subnet.`,
           `[${new Date().toLocaleTimeString()}] Discovered ${scan.data?.hosts_found ?? 0} active host(s). Device inventory refreshed.`,
         ]);
+      } else if (scan.data?.status === "failed") {
+        setLogLines((prev) => [
+          ...prev,
+          `[${new Date().toLocaleTimeString()}] Scan execution failed: ${scan.data?.error || "Unknown error"}`,
+        ]);
       }
     }
   }, [done, scanId, scan.data, qc]);
@@ -90,7 +103,7 @@ export function ScanDialog() {
                     <p className="text-xs text-slate-400">Authorized Nmap CIDR Subnet Scanner</p>
                   </div>
                 </div>
-                <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-200 cursor-pointer">
+                <button onClick={handleCancel} className="text-slate-400 hover:text-slate-200 cursor-pointer">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -104,7 +117,7 @@ export function ScanDialog() {
                   <Input
                     value={target}
                     onChange={(e) => setTarget(e.target.value)}
-                    placeholder="e.g. 192.168.1.0/24 or 10.0.0.0/16"
+                    placeholder="e.g. 10.24.81.0/24 or 192.168.1.0/24"
                     className="font-mono text-sm"
                   />
                 </div>
@@ -118,10 +131,11 @@ export function ScanDialog() {
                         key={preset.value}
                         type="button"
                         onClick={() => setTarget(preset.value)}
-                        className={`px-2.5 py-1 text-xs font-mono rounded border transition-colors cursor-pointer ${target === preset.value
+                        className={`px-2.5 py-1 text-xs font-mono rounded border transition-colors cursor-pointer ${
+                          target === preset.value
                             ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/50"
                             : "bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-800 hover:text-slate-200"
-                          }`}
+                        }`}
                       >
                         {preset.value}
                       </button>
@@ -150,6 +164,7 @@ export function ScanDialog() {
                       <span className="flex items-center gap-1.5"><Terminal className="w-3.5 h-3.5" /> Scan Console</span>
                       {running && <Badge tone="default" pulse>Active</Badge>}
                       {done && scan.data?.status === "completed" && <Badge tone="normal">Completed</Badge>}
+                      {done && scan.data?.status === "failed" && <Badge tone="critical">Failed</Badge>}
                     </div>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {logLines.map((line, idx) => (
@@ -162,8 +177,8 @@ export function ScanDialog() {
 
               {/* Modal Footer */}
               <div className="mt-4 flex justify-end gap-3 border-t border-slate-800 pt-4 shrink-0">
-                <Button variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancel / Reset
                 </Button>
                 <Button variant="default" onClick={() => start.mutate()} disabled={running}>
                   {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Radar className="h-4 w-4" />}
@@ -177,4 +192,3 @@ export function ScanDialog() {
     </>
   );
 }
-
