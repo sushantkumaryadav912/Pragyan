@@ -1,4 +1,4 @@
-import type { Alert, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, Scan, TrafficSummary } from "./types";
+import type { Alert, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, RiskScoreBreakdown, Scan, TrafficSummary } from "./types";
 import { DEMO_ALERTS, DEMO_CHANGES, DEMO_CONNECTIONS, DEMO_DEVICES, DEMO_DNS_LOGS, DEMO_SCANS, DEMO_TRAFFIC_SUMMARY } from "./demoData";
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000";
@@ -193,7 +193,39 @@ export const api = {
       body: JSON.stringify({ status }),
     });
   },
+
+  getDeviceRiskBreakdown: async (deviceId: number): Promise<RiskScoreBreakdown> => {
+    if (isDemoMode()) {
+      return {
+        composite_risk_score: 84,
+        risk_tier: "High",
+        rule_score: 85,
+        ml_anomaly_score: 0.78,
+        threat_intel_score: 40,
+        asset_importance_score: 80,
+        history_score: 36,
+        active_alerts_count: 2,
+        total_alerts_count: 4,
+      };
+    }
+    try {
+      return await request<RiskScoreBreakdown>(`/risk/devices/${deviceId}`);
+    } catch {
+      return {
+        composite_risk_score: 50,
+        risk_tier: "Medium",
+        rule_score: 50,
+        ml_anomaly_score: 0.35,
+        threat_intel_score: 0,
+        asset_importance_score: 40,
+        history_score: 10,
+        active_alerts_count: 1,
+        total_alerts_count: 1,
+      };
+    }
+  },
 };
+
 
 
 

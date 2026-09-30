@@ -171,3 +171,17 @@ class AlertStatusUpdate(BaseModel):
     status: str  # NEW, ACKNOWLEDGED, INVESTIGATING, FALSE_POSITIVE, CONFIRMED, CLOSED
 
 
+# --- Risk & ML ---
+class RiskScoreBreakdownOut(BaseModel):
+    composite_risk_score: int
+    risk_tier: str
+    rule_score: int
+    ml_anomaly_score: float
+    threat_intel_score: int
+    asset_importance_score: int
+    history_score: int
+    active_alerts_count: int
+    total_alerts_count: int
+
+
+

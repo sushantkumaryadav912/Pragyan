@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import alerts, devices, health, scans, traffic, websocket
+from app.api.v1 import alerts, devices, health, ids, risk, scans, traffic, websocket
 from app.core.config import settings
 from app.core.db import init_db
 
@@ -33,7 +33,11 @@ app.include_router(scans.router, prefix=API_PREFIX)
 app.include_router(devices.router, prefix=API_PREFIX)
 app.include_router(traffic.router, prefix=API_PREFIX)
 app.include_router(alerts.router, prefix=API_PREFIX)
+app.include_router(ids.router, prefix=API_PREFIX)
+app.include_router(risk.router, prefix=API_PREFIX)
 app.include_router(websocket.router, prefix=API_PREFIX)
+
+
 
 
 

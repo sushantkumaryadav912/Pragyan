@@ -34,6 +34,13 @@ export function DeviceDetail() {
     enabled: !!id,
   });
 
+  const { data: riskBreakdown } = useQuery({
+    queryKey: ["device-risk", id],
+    queryFn: () => api.getDeviceRiskBreakdown(Number(id)),
+    enabled: !!id,
+  });
+
+
 
   const filteredServices = (device?.services ?? []).filter((s) => {
     const q = serviceSearch.toLowerCase();
@@ -128,6 +135,50 @@ export function DeviceDetail() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Multi-Dimensional Composite Risk Engine Breakdown */}
+          {riskBreakdown && (
+            <Card glow className="bg-slate-900/60 border-cyan-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-mono uppercase tracking-wider text-cyan-400 flex items-center justify-between">
+                  <span>Multi-Dimensional Risk Engine Analysis</span>
+                  <Badge tone={riskTone(riskBreakdown.composite_risk_score)}>
+                    {riskBreakdown.risk_tier} Risk ({riskBreakdown.composite_risk_score}/100)
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs font-mono">
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block uppercase">Rule Engine Score</span>
+                    <span className="text-sm font-bold text-slate-100">{riskBreakdown.rule_score}</span>
+                    <span className="text-[10px] text-slate-500 block">Weight 35%</span>
+                  </div>
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block uppercase">ML Anomaly Score</span>
+                    <span className="text-sm font-bold text-purple-400">{(riskBreakdown.ml_anomaly_score * 100).toFixed(0)}</span>
+                    <span className="text-[10px] text-slate-500 block">Isolation Forest</span>
+                  </div>
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block uppercase">Threat Intel Score</span>
+                    <span className="text-sm font-bold text-slate-100">{riskBreakdown.threat_intel_score}</span>
+                    <span className="text-[10px] text-slate-500 block">Weight 20%</span>
+                  </div>
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block uppercase">Asset Criticality</span>
+                    <span className="text-sm font-bold text-slate-100">{riskBreakdown.asset_importance_score}</span>
+                    <span className="text-[10px] text-slate-500 block">Weight 10%</span>
+                  </div>
+                  <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block uppercase">Alert History Penalty</span>
+                    <span className="text-sm font-bold text-slate-100">{riskBreakdown.history_score}</span>
+                    <span className="text-[10px] text-slate-500 block">Weight 10%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
 
           {/* Vulnerability & Risk Exposure Audit Section */}
           {device.vulnerabilities && device.vulnerabilities.length > 0 && (

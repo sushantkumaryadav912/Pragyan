@@ -156,6 +156,20 @@ export interface Alert {
   timestamp: string;
 }
 
+export interface RiskScoreBreakdown {
+
+  composite_risk_score: number;
+  risk_tier: string;
+  rule_score: number;
+  ml_anomaly_score: number;
+  threat_intel_score: number;
+  asset_importance_score: number;
+  history_score: number;
+  active_alerts_count: number;
+  total_alerts_count: number;
+}
+
+
 
 
 
