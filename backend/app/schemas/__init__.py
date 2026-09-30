@@ -127,3 +127,47 @@ class TrafficSummaryOut(BaseModel):
     protocol_breakdown: dict[str, int]
     top_talkers: list[TopTalkerOut]
 
+
+# --- Alerts ---
+class AlertOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    alert_type: str
+    title: str
+    severity: str
+    risk_score: int
+    confidence: float
+    source_ip: str | None = None
+    destination_ip: str | None = None
+    source_port: int | None = None
+    destination_port: int | None = None
+    protocol: str | None = None
+    description: str
+    evidence: str | None = None
+    detection_rule: str
+    status: str
+    device_id: int | None = None
+    timestamp: datetime
+
+
+class AlertCreate(BaseModel):
+    alert_type: str
+    title: str
+    severity: str = "MEDIUM"
+    risk_score: int = 50
+    confidence: float = 0.85
+    source_ip: str | None = None
+    destination_ip: str | None = None
+    source_port: int | None = None
+    destination_port: int | None = None
+    protocol: str | None = None
+    description: str
+    evidence: str | None = None
+    detection_rule: str = "custom-rule"
+
+
+class AlertStatusUpdate(BaseModel):
+    status: str  # NEW, ACKNOWLEDGED, INVESTIGATING, FALSE_POSITIVE, CONFIRMED, CLOSED
+
+

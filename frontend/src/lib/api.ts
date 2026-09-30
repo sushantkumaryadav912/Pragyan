@@ -1,5 +1,5 @@
-import type { Device, DeviceChange, DeviceDetail, Scan } from "./types";
-import { DEMO_CHANGES, DEMO_DEVICES, DEMO_SCANS } from "./demoData";
+import type { Alert, ConnectionEvent, Device, DeviceChange, DeviceDetail, DNSEvent, Scan, TrafficSummary } from "./types";
+import { DEMO_ALERTS, DEMO_CHANGES, DEMO_CONNECTIONS, DEMO_DEVICES, DEMO_DNS_LOGS, DEMO_SCANS, DEMO_TRAFFIC_SUMMARY } from "./demoData";
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000";
 const API = `${BASE}/api/v1`;
@@ -80,7 +80,6 @@ export const api = {
     }
   },
 
-
   listScans: async (): Promise<Scan[]> => {
     if (isDemoMode()) return DEMO_SCANS;
     try {
@@ -127,6 +126,75 @@ export const api = {
       body: JSON.stringify({ target_cidr }),
     });
   },
+
+  getTrafficSummary: async (): Promise<TrafficSummary> => {
+    if (isDemoMode()) return DEMO_TRAFFIC_SUMMARY;
+    try {
+      return await request<TrafficSummary>("/traffic/summary");
+    } catch {
+      return DEMO_TRAFFIC_SUMMARY;
+    }
+  },
+
+  listConnections: async (): Promise<ConnectionEvent[]> => {
+    if (isDemoMode()) return DEMO_CONNECTIONS;
+    try {
+      return await request<ConnectionEvent[]>("/traffic/connections");
+    } catch {
+      return DEMO_CONNECTIONS;
+    }
+  },
+
+  listDNSQueries: async (): Promise<DNSEvent[]> => {
+    if (isDemoMode()) return DEMO_DNS_LOGS;
+    try {
+      return await request<DNSEvent[]>("/traffic/dns");
+    } catch {
+      return DEMO_DNS_LOGS;
+    }
+  },
+
+  listAlerts: async (status?: string, severity?: string): Promise<Alert[]> => {
+    if (isDemoMode()) {
+      let filtered = [...DEMO_ALERTS];
+      if (status) filtered = filtered.filter((a) => a.status === status);
+      if (severity) filtered = filtered.filter((a) => a.severity === severity);
+      return filtered as Alert[];
+    }
+    try {
+      const params = new URLSearchParams();
+      if (status) params.append("status", status);
+      if (severity) params.append("severity", severity);
+      const query = params.toString() ? `?${params.toString()}` : "";
+      return await request<Alert[]>(`/alerts${query}`);
+    } catch {
+      return DEMO_ALERTS as Alert[];
+    }
+  },
+
+  getAlert: async (id: number): Promise<Alert> => {
+    if (isDemoMode()) {
+      const found = DEMO_ALERTS.find((a) => a.id === id);
+      if (found) return found as Alert;
+    }
+    return await request<Alert>(`/alerts/${id}`);
+  },
+
+  updateAlertStatus: async (id: number, status: string): Promise<Alert> => {
+    if (isDemoMode()) {
+      const found = DEMO_ALERTS.find((a) => a.id === id);
+      if (found) {
+        found.status = status;
+        return found as Alert;
+      }
+    }
+    return await request<Alert>(`/alerts/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  },
 };
+
+
 
 

@@ -6,8 +6,47 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Device, DeviceChange, Scan, Service
+from app.models import Alert, Device, DeviceChange, Scan, Service
 from app.services.discovery.parser import ParsedHost
+
+
+async def create_alert(db: AsyncSession, alert: Alert) -> Alert:
+    db.add(alert)
+    await db.commit()
+    await db.refresh(alert)
+    return alert
+
+
+async def get_alert(db: AsyncSession, alert_id: int) -> Alert | None:
+    return await db.get(Alert, alert_id)
+
+
+async def list_alerts(
+    db: AsyncSession,
+    status: str | None = None,
+    severity: str | None = None,
+    limit: int = 50,
+) -> list[Alert]:
+    stmt = select(Alert).order_by(Alert.timestamp.desc(), Alert.id.desc()).limit(limit)
+    if status:
+        stmt = stmt.where(Alert.status == status)
+    if severity:
+        stmt = stmt.where(Alert.severity == severity)
+    res = await db.execute(stmt)
+    return list(res.scalars().all())
+
+
+async def update_alert_status(
+    db: AsyncSession, alert_id: int, status: str
+) -> Alert | None:
+    alert = await db.get(Alert, alert_id)
+    if alert is None:
+        return None
+    alert.status = status
+    await db.commit()
+    await db.refresh(alert)
+    return alert
+
 
 
 async def create_scan(db: AsyncSession, target_cidr: str) -> Scan:

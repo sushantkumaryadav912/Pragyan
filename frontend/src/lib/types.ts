@@ -133,5 +133,29 @@ export interface TrafficSummary {
   top_talkers: TopTalker[];
 }
 
+export type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type AlertStatus = "NEW" | "ACKNOWLEDGED" | "INVESTIGATING" | "FALSE_POSITIVE" | "CONFIRMED" | "CLOSED";
+
+export interface Alert {
+  id: number;
+  alert_type: string;
+  title: string;
+  severity: AlertSeverity;
+  risk_score: number;
+  confidence: number;
+  source_ip: string | null;
+  destination_ip: string | null;
+  source_port: number | null;
+  destination_port: number | null;
+  protocol: string | null;
+  description: string;
+  evidence: string | null;
+  detection_rule: string;
+  status: AlertStatus;
+  device_id: number | null;
+  timestamp: string;
+}
+
+
 
 

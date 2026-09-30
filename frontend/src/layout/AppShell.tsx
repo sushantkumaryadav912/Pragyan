@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Wifi,
   Sparkles,
+  ShieldAlert,
 } from "lucide-react";
 
 
@@ -25,11 +26,20 @@ const navGroups = [
     items: [
       { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
       { to: "/devices", label: "Asset Inventory", icon: HardDrive },
+      { to: "/traffic", label: "Traffic Telemetry", icon: Activity },
       { to: "/topology", label: "Topology Map", icon: Network },
       { to: "/scans", label: "Scan Operations", icon: Activity },
     ],
   },
+  {
+    section: "Security & Detection",
+    items: [
+      { to: "/alerts", label: "Security Alerts", icon: ShieldAlert },
+    ],
+  },
 ];
+
+
 
 export function AppShell() {
   const [searchOpen, setSearchOpen] = useState(false);
