@@ -4,14 +4,33 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
-    --card: 222 40% 9%;
-    --muted: 217 33% 15%;
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    
+    --card: 222 47% 7%;
+    --card-hover: 222 47% 10%;
+    --card-border: 217 33% 16%;
+    
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 186 100% 50%;
+    --primary-foreground: 224 71% 4%;
+    
+    --secondary: 262 83% 58%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217 33% 13%;
     --muted-foreground: 215 20% 65%;
-    --border: 217 33% 18%;
-    --primary: 199 89% 48%;
-    --primary-foreground: 210 40% 98%;
+    
+    --accent: 186 100% 15%;
+    --accent-foreground: 186 100% 70%;
+    
+    --border: 217 33% 16%;
+    --input: 217 33% 16%;
+    --ring: 186 100% 50%;
+    
+    --radius: 0.625rem;
   }
 
   * {
@@ -21,7 +40,97 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.04) 0%, transparent 45%),
+      radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.04) 0%, transparent 45%),
+      linear-gradient(to bottom, rgba(15, 23, 42, 0.6), rgba(6, 11, 25, 0.9));
+    background-attachment: fixed;
   }
 }
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.6);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.4);
+}
+
+/* Glassmorphism & Cyber Glows */
+.glass-panel {
+  background: rgba(13, 22, 41, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card {
+  background: rgba(17, 27, 49, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.cyber-glow-cyan {
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+}
+
+.cyber-glow-critical {
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.35);
+}
+
+.cyber-grid-bg {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Animations */
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar {
+  animation: radar-sweep 4s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.96);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
